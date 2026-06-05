@@ -1,0 +1,33 @@
+        <!-- Página Usuarios -->
+        <div id="pageUsuarios" class="page">
+            <div class="page-header">
+                <h1>Usuarios del Sistema</h1>
+                <div class="header-actions">
+                    <button class="btn btn-info" onclick="exportarUsuariosExcel()" title="Exportar a Excel">📄 Exportar</button>
+                    <button class="btn btn-warning" onclick="descargarUsuariosPlantilla()" title="Descargar plantilla de carga masiva">📥 Plantilla</button>
+                    <button class="btn btn-success" onclick="document.getElementById('importUsuariosFile').click()" title="Importar desde Excel">📤 Importar</button>
+                    <input type="file" id="importUsuariosFile" style="display: none;" accept=".xlsx, .xls" onchange="importarUsuariosExcel(this)">
+                    <button class="btn btn-primary" onclick="window.app.editUsuario()">Agregar Usuario</button>
+                </div>
+            </div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Usuario</th>
+                            <th>Nombre Completo</th>
+                            <th>Email</th>
+                            <th>Rol</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usuariosBody">
+                        <tr>
+                            <td colspan="7">Cargando...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>

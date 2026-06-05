@@ -1,0 +1,182 @@
+/* reportes.css - Diseño Premium para Reportes y Analíticas */
+
+.charts-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 25px;
+    margin-top: 20px;
+}
+
+.chart-wrapper {
+    position: relative;
+    padding: 20px;
+    background: #fff;
+    border-radius: 0 0 20px 20px;
+    min-height: 350px;
+    height: 350px;
+}
+
+.dimension-card.full-width {
+    grid-column: 1 / -1;
+}
+
+.chart-wrapper.large-chart {
+    min-height: 450px;
+    height: 450px;
+}
+
+/* Mapa de Talentos */
+.talent-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    padding: 25px;
+    background: #f8fafc;
+}
+
+.talent-box {
+    background: white;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.talent-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.talent-box .box-header {
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white; /* Texto blanco para fondos sólidos */
+}
+
+.box-avanzado .box-header { background: #10b981; }
+.box-intermedio .box-header { background: #3b82f6; }
+.box-desarrollo .box-header { background: #f59e0b; }
+.box-inicial .box-header { background: #ef4444; }
+
+.box-labels {
+    display: flex;
+    flex-direction: column;
+}
+
+.box-title {
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.9;
+}
+
+.box-level {
+    font-size: 1.1rem;
+    font-weight: 800;
+}
+
+.box-icon {
+    font-size: 1.5rem;
+}
+
+.talent-list-container {
+    padding: 15px;
+    background: #fff;
+    flex: 1;
+}
+
+.talent-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.talent-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    background: #f8fafc;
+    border-radius: 10px;
+    border-left: 4px solid var(--primary);
+    transition: all 0.2s ease;
+}
+
+.talent-item:hover {
+    background: #f1f5f9;
+    transform: translateX(4px);
+}
+
+.talent-name {
+    font-weight: 600;
+    color: var(--text);
+    font-size: 0.85rem;
+}
+
+.talent-score {
+    background: var(--white);
+    color: var(--primary);
+    padding: 2px 10px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    border: 1px solid var(--border);
+}
+
+.talent-empty {
+    color: var(--text-light);
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+    font-size: 0.85rem;
+}
+
+/* Colores específicos para items internos */
+.box-avanzado .talent-item { border-left-color: #10b981; }
+.box-intermedio .talent-item { border-left-color: #3b82f6; }
+.box-desarrollo .talent-item { border-left-color: #f59e0b; }
+.box-inicial .talent-item { border-left-color: #ef4444; }
+
+/* Estilos para el encabezado de sección colapsable */
+.talent-map-header {
+    background: #002b5e !important;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.talent-map-header:hover {
+    background: #003d85 !important;
+}
+
+.talent-map-header h3 {
+    color: white !important;
+}
+
+.badge-new {
+    background: #ef4444;
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 900;
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 1px;
+}
+
+.toggle-icon-arrow {
+    color: white;
+    transition: transform 0.3s ease;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .charts-container {
+        grid-template-columns: 1fr;
+    }
+}

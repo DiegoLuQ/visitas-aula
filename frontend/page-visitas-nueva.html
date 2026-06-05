@@ -1,0 +1,51 @@
+
+<!-- Página Nueva Visita (Aula / UTP) -->
+<div id="pageVisitasNueva" class="page">
+    <!-- El contenido se genera dinámicamente según la plantilla seleccionada -->
+    <div id="visitaFormContainer" class="p-4 md:p-8">
+        <div class="flex items-center justify-center min-h-[400px]">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        </div>
+    </div>
+
+    <!-- Modales de Resultado (Específico para UTP) -->
+    <div id="utpResultsDashboard" class="hidden fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+            <div class="bg-slate-900 p-8 text-white text-center relative">
+                <div class="absolute -top-12 left-1/2 -translate-x-1/2 bg-indigo-600 w-24 h-24 rounded-full flex items-center justify-center border-8 border-white shadow-xl">
+                    <i class="fas fa-check text-4xl"></i>
+                </div>
+                <div class="mt-8">
+                    <h3 class="text-2xl font-black">¡Evaluación Listada!</h3>
+                    <p id="resInterpretacion" class="text-indigo-300 text-sm font-bold mt-2 uppercase tracking-widest">Interpretación...</p>
+                </div>
+            </div>
+            <div class="p-8 space-y-8">
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="bg-slate-50 rounded-3xl p-4 text-center border border-slate-100">
+                        <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">Ambiente</span>
+                        <div id="resDim1" class="text-xl font-black text-slate-900">0.0</div>
+                    </div>
+                    <div class="bg-slate-50 rounded-3xl p-4 text-center border border-slate-100">
+                        <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">Enseñanza</span>
+                        <div id="resDim2" class="text-xl font-black text-slate-900">0.0</div>
+                    </div>
+                    <div class="bg-slate-50 rounded-3xl p-4 text-center border border-slate-100">
+                        <span class="text-[10px] font-black text-slate-400 uppercase block mb-1">Tiempo</span>
+                        <div id="resDim3" class="text-xl font-black text-slate-900">0.0</div>
+                    </div>
+                </div>
+                
+                <div class="bg-indigo-50 rounded-3xl p-6 text-center">
+                    <span class="text-xs font-bold text-indigo-400 uppercase block mb-1">Puntaje Global</span>
+                    <div id="resGlobal" class="text-5xl font-black text-indigo-600 tracking-tighter">0.0</div>
+                </div>
+
+                <div class="flex gap-4">
+                    <button type="button" onclick="document.getElementById('utpResultsDashboard').classList.add('hidden')" class="flex-1 py-4 bg-slate-100 text-slate-600 font-black rounded-2xl hover:bg-slate-200 transition-all">REVISAR</button>
+                    <button type="button" onclick="app.confirmUtpSave()" class="flex-1 py-4 bg-indigo-600 text-white font-black rounded-2xl shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 transition-all">CONFIRMAR</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,64 @@
+<!-- Página Evaluaciones -->
+<div id="pageEvaluaciones" class="page">
+    <div class="page-header">
+        <h1>Acompañamientos</h1>
+        <button class="btn btn-primary" onclick="app.navigateTo('nueva-evaluacion')">
+            <i class="fas fa-plus"></i> Nuevo Acompañamiento
+        </button>
+    </div>
+
+    <!-- Barra de Filtros Profesional -->
+    <div class="filters-bar">
+        <div class="filter-group">
+            <label>Colegio</label>
+            <select id="filterColegioEval" class="form-select" onchange="loadEvaluaciones()">
+                <option value="">Todos los Colegios</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Buscar Docente</label>
+            <input type="text" id="filterDocenteEval" class="form-control" placeholder="Nombre del docente..." oninput="loadEvaluaciones()">
+        </div>
+        <div class="filter-group">
+            <label>Desde</label>
+            <input type="date" id="filterFechaDesdeEval" class="form-control" onchange="loadEvaluaciones()">
+        </div>
+        <div class="filter-group">
+            <label>Hasta</label>
+            <input type="date" id="filterFechaHastaEval" class="form-control" onchange="loadEvaluaciones()">
+        </div>
+        <div class="filter-group">
+            <button class="btn btn-secondary" onclick="limpiarFiltrosEval()" style="width: 100%;">
+                <i class="fas fa-eraser"></i> Limpiar
+            </button>
+        </div>
+    </div>
+
+    <!-- Contenedor de Tabla -->
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table" id="evaluacionesTable">
+                <thead>
+                    <tr id="evaluacionesHeader">
+                        <th onclick="window.app.sortData('id')" style="cursor:pointer; width: 80px;">Cod <i class="fas fa-sort"></i></th>
+                        <th onclick="window.app.sortData('fecha')" style="cursor:pointer; width: 120px;">Fecha <i class="fas fa-sort"></i></th>
+                        <th onclick="window.app.sortData('docente_nombre')" style="cursor:pointer;">Docente <i class="fas fa-sort"></i></th>
+                        <th onclick="window.app.sortData('colegio_nombre')" style="cursor:pointer;">Colegio <i class="fas fa-sort"></i></th>
+                        <th onclick="window.app.sortData('promedio')" style="cursor:pointer; text-align: center; width: 100px;">Prom <i class="fas fa-sort"></i></th>
+                        <th style="text-align: center; width: 180px;">Nivel Liderazgo</th>
+                        <th onclick="window.app.sortData('estado')" style="cursor:pointer; text-align: center; width: 140px;">Estado <i class="fas fa-sort"></i></th>
+                        <th style="text-align: right; width: 130px;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="evaluacionesBody">
+                    <tr>
+                        <td colspan="8" class="text-center p-5">
+                            <div class="spinner" style="margin: 0 auto 10px;"></div>
+                            <p>Cargando acompañamientos...</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firma de Acompañamiento - Liderazgo Docente</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #004080;
+            --success: #28a745;
+            --bg: #f4f7f6;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 { color: var(--primary); font-size: 1.5rem; margin-bottom: 10px; }
+        p { color: #666; font-size: 0.95rem; line-height: 1.5; margin-bottom: 25px; }
+        .form-group { margin-bottom: 20px; }
+        input {
+            width: 100%;
+            padding: 15px;
+            font-size: 2rem;
+            text-align: center;
+            letter-spacing: 8px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            outline: none;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+        input:focus { border-color: var(--primary); }
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, background 0.3s;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn:disabled { background: #ccc; cursor: not-allowed; }
+        #message { margin-top: 20px; padding: 15px; border-radius: 8px; display: none; }
+        .error { background: #ffebee; color: #c62828; }
+        .success { background: #e8f5e9; color: #2e7d32; }
+    </style>
+</head>
+<body>
+    <div class="card" id="mainCard">
+        <h1>Firma Digital</h1>
+        <div id="evalDetails" style="background: #f8f9fa; padding: 15px; border-radius: 12px; margin-bottom: 20px; text-align: left; border: 1px solid #e9ecef; display: none;">
+            <p style="margin: 0 0 5px; font-size: 0.8rem; text-transform: uppercase; color: #888;">Acompañamiento <b id="evalId">#--</b></p>
+            <div style="font-weight: 600; color: #2c3e50; margin-bottom: 8px;" id="evalDocente">Docente</div>
+            <div style="font-size: 0.85rem; color: #666;">
+                <span id="evalColegio">Colegio</span> • <span id="evalCurso">Curso</span><br>
+                <span id="evalAsignatura">Asignatura</span> • <span id="evalFecha">Fecha</span>
+            </div>
+            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #dee2e6; display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 700; color: var(--primary);">Promedio Global:</span>
+                <span id="evalPromedio" style="background: var(--primary); color: white; padding: 4px 10px; border-radius: 6px; font-weight: 700;">--</span>
+            </div>
+        </div>
+
+        <p id="instructionText">Ingrese el código de 6 dígitos de su aplicación <b>Google Authenticator</b> para firmar este acompañamiento.</p>
+        
+        <div class="form-group">
+            <input type="text" id="totpCode" maxlength="6" inputmode="numeric" placeholder="000000" autocomplete="one-time-code">
+        </div>
+        
+        <button id="btnSign" class="btn">Confirmar Firma</button>
+        
+        <div id="message"></div>
+    </div>
+
+    <script>
+        const API_URL = window.location.port === '8080' || (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') 
+            ? '/api' 
+            : 'http://' + window.location.hostname + ':8001';
+
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token');
+
+        if (!token) {
+            document.getElementById('mainCard').innerHTML = '<h1 style="color:red">Error</h1><p>Enlace de firma inválido o incompleto.</p>';
+        } else {
+            // Cargar detalles de la evaluación
+            fetch(`${API_URL}/evaluaciones/public-detail?token=${token}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.id) {
+                        document.getElementById('evalId').textContent = '#' + data.id;
+                        document.getElementById('evalDocente').textContent = data.docente_nombre;
+                        document.getElementById('evalColegio').textContent = data.colegio_nombre;
+                        document.getElementById('evalCurso').textContent = data.curso;
+                        document.getElementById('evalAsignatura').textContent = data.asignatura;
+                        document.getElementById('evalFecha').textContent = data.fecha;
+                        document.getElementById('evalPromedio').textContent = data.promedio.toFixed(2);
+                        document.getElementById('evalDetails').style.display = 'block';
+
+                        if (data.estado === 'CERRADA' || data.estado === 'FIRMADA_DOCENTE') {
+                            document.getElementById('instructionText').innerHTML = 
+                                '<div style="background:#e8f5e9; color:#2e7d32; padding:15px; border-radius:10px; font-weight:600; margin-bottom:20px;">' +
+                                '✓ Este acompañamiento ya se encuentra firmado digitalmente.</div>';
+                            document.getElementById('totpCode').style.display = 'none';
+                            document.getElementById('btnSign').style.display = 'none';
+                        }
+                    }
+                })
+                .catch(err => console.error('Error loading details:', err));
+        }
+
+        const btn = document.getElementById('btnSign');
+        const input = document.getElementById('totpCode');
+        const msgDiv = document.getElementById('message');
+
+        btn.addEventListener('click', async () => {
+            const code = input.value;
+            if (code.length !== 6) return;
+
+            btn.disabled = true;
+            btn.textContent = 'Enviando...';
+            msgDiv.style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_URL}/evaluaciones/public-sign`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token, code })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    msgDiv.textContent = '¡Firma enviada con éxito! Ya puede cerrar esta ventana.';
+                    msgDiv.className = 'success';
+                    msgDiv.style.display = 'block';
+                    input.disabled = true;
+                    btn.style.display = 'none';
+                } else {
+                    throw new Error(data.detail || 'Error al firmar');
+                }
+            } catch (err) {
+                msgDiv.textContent = err.message;
+                msgDiv.className = 'error';
+                msgDiv.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = 'Confirmar Firma';
+            }
+        });
+    </script>
+</body>
+</html>

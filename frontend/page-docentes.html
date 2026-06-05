@@ -1,0 +1,48 @@
+        <!-- Página Docentes -->
+        <div id="pageDocentes" class="page">
+            <div class="page-header">
+                <h1>Docentes</h1>
+                <div class="header-actions">
+                    <button class="btn btn-info" onclick="exportarDocentesExcel()" title="Exportar a Excel">📄
+                        Exportar</button>
+                    <button class="btn btn-warning" onclick="descargarDocentesPlantilla()"
+                        title="Descargar Plantilla">📥 Plantilla</button>
+                    <button class="btn btn-success" onclick="document.getElementById('importDocentesFile').click()"
+                        title="Importar desde Excel">📤 Importar</button>
+                    <input type="file" id="importDocentesFile" style="display: none;" accept=".xlsx, .xls"
+                        onchange="importarDocentesExcel(this)">
+                    <button class="btn btn-primary" onclick="showModal('docente')">Agregar Docente</button>
+                </div>
+            </div>
+            <div class="filters-bar">
+                <div class="filter-group">
+                    <label>Buscar por nombre o RUT:</label>
+                    <input type="text" id="filterNombreDocentes" class="form-control" placeholder="Nombre o RUT..." oninput="window.app.loadDocentes()">
+                </div>
+                <div class="filter-group">
+                    <label>Filtrar por Colegio:</label>
+                    <select id="filterColegioDocentes" class="form-select" onchange="window.app.loadDocentes()">
+                        <option value="">Todos los colegios</option>
+                    </select>
+                </div>
+            </div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="display:none;">ID</th>
+                            <th>Nombre</th>
+                            <th>RUT</th>
+                            <th>Email</th>
+                            <th>Colegio</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="docentesBody">
+                        <tr>
+                            <td colspan="6">Cargando...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>

@@ -1,0 +1,37 @@
+version: '3.8'
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mcdp_backend
+    # Ya no necesitas mapear el puerto del backend al host (ej. 8000:8000)
+    # porque el frontend o el proxy se comunican internamente.
+    networks:
+      - red_produccion
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=${DOCKER_DATABASE_URL}
+      - SECRET_KEY=${SECRET_KEY}
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: mcdp_frontend
+    # Eliminamos los puertos mapeados al host (80:80)
+    # Agregamos las variables para el Proxy y SSL
+    environment:
+      - VIRTUAL_HOST=liderazgo.dpmc.cl
+      - LETSENCRYPT_HOST=liderazgo.dpmc.cl
+    networks:
+      - red_produccion
+    restart: always
+    depends_on:
+      - backend
+
+networks:
+  red_produccion:
+    external: true

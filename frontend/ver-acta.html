@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acta de Acompañamiento - Liderazgo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #004080;
+            --secondary: #64748b;
+            --success: #10b981;
+            --bg: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.5;
+            padding: 60px 20px;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 60px;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,100,0.08);
+            position: relative;
+            overflow: hidden;
+            border-top: 6px solid var(--primary);
+        }
+
+        .watermark {
+            position: absolute;
+            top: 20px;
+            right: -30px;
+            transform: rotate(45deg);
+            opacity: 0.05;
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--primary);
+            pointer-events: none;
+            background: var(--primary);
+            color: white;
+            padding: 5px 50px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #edf2f7;
+        }
+        .header h1 {
+            color: var(--primary);
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+        .header p { color: var(--text-muted); font-size: 1.1rem; }
+
+        .section { margin-bottom: 45px; }
+        .section-title {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--primary);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800;
+        }
+        .section-title::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, #e2e8f0, transparent);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            background: #f8fafc;
+            padding: 25px;
+            border-radius: 12px;
+        }
+        .info-item label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .info-item span {
+            font-weight: 700;
+            color: var(--text-main);
+            font-size: 1rem;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 15px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+        .results-table th {
+            text-align: left;
+            background: #003366;
+            padding: 15px;
+            font-size: 0.85rem;
+            color: white;
+            font-weight: 600;
+        }
+        .results-table td {
+            padding: 15px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 1rem;
+        }
+        .promedio-cell {
+            font-weight: 800;
+            color: var(--primary);
+            text-align: center;
+        }
+
+        .detail-box {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .detail-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            display: block;
+        }
+        .detail-content {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #334155;
+            white-space: pre-wrap;
+        }
+
+        .badge-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .badge {
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .summary-card {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .card {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary);
+        }
+        .card h4 {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        .card p {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
+
+        .signature-box {
+            margin-top: 60px;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 1px solid #bae6fd;
+            padding: 40px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+        .signature-icon { 
+            font-size: 3rem;
+            background: white;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            box-shadow: 0 10px 15px rgba(0,0,0,0.05);
+        }
+        .signature-text h4 { color: #003366; font-size: 1.25rem; margin-bottom: 8px; font-weight: 800; }
+        .signature-text p { font-size: 0.95rem; color: #475569; line-height: 1.4; }
+        .signature-code {
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            background: #fff;
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: 1px solid #bae6fd;
+            color: var(--success);
+            font-weight: 800;
+            display: inline-block;
+            font-size: 1.1rem;
+        }
+
+        /* Botón de desglose */
+        .desglose-btn {
+            margin-top: 20px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 12px 22px;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.15s, transform 0.1s;
+        }
+        .desglose-btn:hover { background: #003366; transform: translateY(-1px); }
+
+        /* Modal de desglose */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(3px);
+            z-index: 1000;
+            padding: 40px 20px;
+            overflow-y: auto;
+        }
+        .modal-overlay.open { display: flex; align-items: flex-start; justify-content: center; }
+        .modal-card {
+            background: #fff;
+            width: 100%;
+            max-width: 820px;
+            border-radius: 18px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            margin: auto;
+            animation: modalIn 0.2s ease;
+        }
+        @keyframes modalIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .modal-head {
+            background: var(--primary);
+            color: #fff;
+            padding: 22px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+        }
+        .modal-head h3 { font-size: 1.2rem; font-weight: 800; }
+        .modal-close {
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: #fff;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 1.3rem;
+            line-height: 1;
+            cursor: pointer;
+        }
+        .modal-close:hover { background: rgba(255,255,255,0.3); }
+        .modal-body { padding: 30px; }
+        .dim-block { margin-bottom: 30px; }
+        .dim-block:last-child { margin-bottom: 0; }
+        .dim-block > h4 {
+            color: var(--primary);
+            font-size: 1.05rem;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+        .dim-block > .dim-desc {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 14px;
+        }
+        .ind-item {
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px 18px;
+            margin-bottom: 12px;
+            background: #f8fafc;
+        }
+        .ind-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 15px;
+        }
+        .ind-name { font-weight: 700; color: var(--text-main); font-size: 0.98rem; }
+        .ind-desc { color: #475569; font-size: 0.88rem; margin-top: 4px; }
+        .ind-score {
+            flex-shrink: 0;
+            background: var(--primary);
+            color: #fff;
+            font-weight: 800;
+            min-width: 46px;
+            text-align: center;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        .ind-score.na { background: #cbd5e1; color: #475569; }
+        .ind-estrategia {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed #cbd5e1;
+            font-size: 0.88rem;
+            color: #334155;
+        }
+        .ind-estrategia strong { color: var(--primary); display: block; margin-bottom: 4px; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Plan Estratégico de Cambios (tarjetas) */
+        .plan-list { display: flex; flex-direction: column; gap: 18px; }
+        .plan-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #fff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        .plan-card-head {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 18px 20px;
+            background: #f8fafc;
+            border-bottom: 1px solid #eef2f7;
+        }
+        .plan-num {
+            flex-shrink: 0;
+            width: 30px;
+            height: 30px;
+            border-radius: 10px;
+            background: var(--primary);
+            color: #fff;
+            font-weight: 800;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .plan-field-label {
+            display: block;
+            font-size: 0.68rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+        .plan-field-label.accent { color: var(--primary); }
+        .plan-cambio { font-weight: 700; color: #1e293b; font-size: 1rem; line-height: 1.45; }
+        .plan-card-body { padding: 18px 20px; }
+        .plan-acciones { margin-bottom: 16px; }
+        .plan-text { color: #334155; font-size: 0.95rem; line-height: 1.6; white-space: pre-wrap; }
+        .plan-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .plan-chip { background: #f8fafc; border: 1px solid #eef2f7; border-radius: 12px; padding: 12px 14px; }
+        .plan-chip .plan-text { font-size: 0.9rem; line-height: 1.5; }
+        @media (max-width: 640px) { .plan-meta { grid-template-columns: 1fr; } }
+
+        @media print {
+            body { background: #fff; padding: 0; }
+            .container { box-shadow: none; padding: 0; border: none; max-width: 100%; }
+            .signature-box { page-break-inside: avoid; }
+            .plan-card { page-break-inside: avoid; }
+            .desglose-btn, .modal-overlay { display: none !important; }
+        }
+
+        #loading { text-align: center; padding: 100px; font-size: 1.5rem; font-weight: 600; color: var(--primary); }
+    </style>
+</head>
+<body>
+
+<div id="loading">✨ Verificando Acta Oficial...</div>
+
+<div id="content" class="container" style="display:none;">
+    <div class="watermark">OFICIAL</div>
+    
+    <div class="header">
+        <h1>Acta de Acompañamiento</h1>
+        <p id="evaluacionId">ID: Loading...</p>
+    </div>
+
+    <!-- I. Objetivo -->
+    <div class="section" style="background: #f0f7ff; border-left: 5px solid var(--primary); padding: 30px; border-radius: 12px; margin-bottom: 40px;">
+        <h2 class="section-title"><span>I.</span> Objetivo</h2>
+        <div id="objetivoContent" style="color: var(--text-main); line-height: 1.8; font-size: 1.05rem;"></div>
+    </div>
+
+    <!-- II. Datos Generales -->
+    <div class="section">
+        <h2 class="section-title"><span>II.</span> Datos Generales</h2>
+        <div class="info-grid">
+            <div class="info-item">
+                <label>Colegio</label>
+                <span id="colegio">-</span>
+            </div>
+            <div class="info-item">
+                <label>Docente</label>
+                <span id="docente">-</span>
+            </div>
+            <div class="info-item">
+                <label>RUT</label>
+                <span id="docenteRut">-</span>
+            </div>
+            <div class="info-item">
+                <label>Nivel y Curso</label>
+                <span id="curso">-</span>
+            </div>
+            <div class="info-item">
+                <label>Asignatura</label>
+                <span id="asignatura">-</span>
+            </div>
+            <div class="info-item">
+                <label>Fecha</label>
+                <span id="fecha">-</span>
+            </div>
+            <div class="info-item">
+                <label>Duración</label>
+                <span id="duracion">-</span>
+            </div>
+            <div class="info-item">
+                <label>Observador</label>
+                <span id="observador">-</span>
+            </div>
+            <div class="info-item">
+                <label>Estado</label>
+                <span id="estadoLabel" style="color: var(--success);">FINALIZADO</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenedor Dinámico de Secciones de Acompañamiento -->
+    <div id="dynamicSections"></div>
+
+    <div class="signature-box" id="validSignature">
+        <div class="signature-icon">🛡️</div>
+        <div class="signature-text">
+            <h4>Documento Autenticado</h4>
+            <p>Este informe ha sido validado mediante firma digital y el sello de integridad del Sistema de Gestión de Liderazgo. Los datos aquí presentados son inalterables.</p>
+            <div class="signature-code" id="codigoFirma">VERIFICACIÓN: -</div>
+            <p style="margin-top: 10px; font-size: 0.8rem; font-weight: 600;">Firmado digitalmente el: <span id="fechaFirma">-</span></p>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Desglose de Indicadores -->
+<div id="desgloseModal" class="modal-overlay" onclick="if(event.target===this) closeDesglose()">
+    <div class="modal-card">
+        <div class="modal-head">
+            <h3>📋 Desglose de Indicadores y Rúbricas</h3>
+            <button class="modal-close" onclick="closeDesglose()" aria-label="Cerrar">&times;</button>
+        </div>
+        <div class="modal-body" id="desgloseBody"></div>
+    </div>
+</div>
+
+<script>
+    const API_URL = (window.location.port === '8080' || (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'))
+        ? '/api'
+        : `${window.location.protocol}//${window.location.hostname}:8002`;
+
+    // Estado en memoria para alimentar el modal de desglose
+    const actaState = { data: null };
+
+    // Textos del objetivo según el contexto de la pauta
+    const OBJETIVO_LIDERAZGO = `
+        <p style="margin-bottom: 15px;">
+            Observar indicadores de liderazgo del docente en el aula, considerando aspectos de comunicación, presencia, coherencia, organización y conducción del grupo.
+        </p>
+        <p style="margin-bottom: 15px; font-weight: 700; color: var(--primary);">
+            Esta pauta no evalúa aspectos pedagógicos, sino comportamientos de liderazgo del docente en la conducción del grupo.
+        </p>
+        <p style="margin-bottom: 0;">
+            Esta observación forma parte de un proceso de acompañamiento desde Psicología Organizacional e incluye una instancia de retroalimentación orientada al desarrollo del liderazgo docente.
+        </p>`;
+
+    const OBJETIVO_VISITA = `
+        <p style="margin-bottom: 15px;">Las visitas al aula buscan:</p>
+        <ul style="margin: 0 0 0 20px; padding: 0; display: flex; flex-direction: column; gap: 8px;">
+            <li>Apoyar el desarrollo profesional de los docentes.</li>
+            <li>Identificar fortalezas y oportunidades de mejora en la enseñanza.</li>
+            <li>Promover la reflexión sobre las prácticas pedagógicas.</li>
+            <li>Compartir y difundir buenas prácticas entre profesores.</li>
+            <li>Mejorar los aprendizajes de los estudiantes mediante un acompañamiento pedagógico efectivo.</li>
+        </ul>`;
+
+    function renderObjetivo(isVisita) {
+        const el = document.getElementById('objetivoContent');
+        if (el) el.innerHTML = isVisita ? OBJETIVO_VISITA : OBJETIVO_LIDERAZGO;
+    }
+
+    function openDesglose() {
+        const e = actaState.data;
+        if (!e) return;
+        const body = document.getElementById('desgloseBody');
+        body.innerHTML = buildDesgloseHtml(e);
+        document.getElementById('desgloseModal').classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDesglose() {
+        document.getElementById('desgloseModal').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    function buildDesgloseHtml(e) {
+        const detalle = e.plantilla_detalle || [];
+        if (!detalle.length) {
+            return '<p style="color: var(--text-muted); font-style: italic;">No hay detalle de indicadores disponible para esta pauta.</p>';
+        }
+
+        // Mapa de respuestas por indicador (subdimensión)
+        const respMap = {};
+        (e.respuestas || []).forEach(r => { respMap[r.subdimension_id] = r; });
+
+        return detalle.map(dim => {
+            const indicadores = (dim.indicadores || []).map(ind => {
+                const resp = respMap[ind.id];
+                const val = resp ? resp.valor : null;
+                const isNA = val === null || val === undefined || val === 0;
+                const estrategia = (resp && resp.estrategia && resp.estrategia.trim()) ? resp.estrategia.trim() : '';
+                return `
+                    <div class="ind-item">
+                        <div class="ind-top">
+                            <div>
+                                <div class="ind-name">${escapeHtml(ind.nombre || '')}</div>
+                                ${ind.descripcion ? `<div class="ind-desc">${escapeHtml(ind.descripcion)}</div>` : ''}
+                            </div>
+                            <div class="ind-score ${isNA ? 'na' : ''}">${isNA ? 'N/A' : Number(val).toFixed(1)}</div>
+                        </div>
+                        ${estrategia ? `<div class="ind-estrategia"><strong>Estrategia registrada</strong>${escapeHtml(estrategia)}</div>` : ''}
+                    </div>`;
+            }).join('');
+
+            return `
+                <div class="dim-block">
+                    <h4>${escapeHtml(dim.nombre || '')}</h4>
+                    ${dim.descripcion ? `<p class="dim-desc">${escapeHtml(dim.descripcion)}</p>` : ''}
+                    ${indicadores || '<p style="color: var(--text-muted); font-style: italic;">Sin indicadores.</p>'}
+                </div>`;
+        }).join('');
+    }
+
+    function escapeHtml(str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    document.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Escape') closeDesglose();
+    });
+
+    async function loadActa() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('c');
+
+        if (!code) {
+            document.getElementById('loading').innerHTML = '<div style="background:#fee2e2; color:#b91c1c; padding:30px; border-radius:12px; border:1px solid #fecaca;">' +
+                '<h2 style="margin-bottom:10px;">Acceso Denegado</h2>' +
+                '<p>No se ha proporcionado un código de acceso válido.</p></div>';
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/evaluaciones/public/ver/${code}`);
+            if (!response.ok) {
+                if(response.status === 403) throw new Error('El acompañamiento aún no ha sido finalizado.');
+                throw new Error('No se encontró el acompañamiento solicitado.');
+            }
+            
+            const data = await response.json();
+            renderData(data);
+        } catch (error) {
+            document.getElementById('loading').innerHTML = `<div style="background:#fee2e2; color:#b91c1c; padding:30px; border-radius:12px; border:1px solid #fecaca;">` +
+                `<h2 style="margin-bottom:10px;">Error</h2>` +
+                `<p>${error.message}</p></div>`;
+        }
+    }
+
+    function renderData(e) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('content').style.display = 'block';
+
+        // Detectar Modo Docente (restringido) de forma segura
+        // Si e.promedio es null, el servidor ha filtrado los datos por seguridad.
+        const isDocenteMode = (e.promedio === null);
+
+        // Header e ID
+        document.getElementById('evaluacionId').textContent = `Certificado de Integridad #${e.id}`;
+        
+        // I. Datos Generales
+        document.getElementById('colegio').textContent = e.docente?.colegio?.nombre || '-';
+        document.getElementById('docente').textContent = e.docente?.nombre || '-';
+        document.getElementById('docenteRut').textContent = e.docente?.rut || '-';
+        document.getElementById('curso').textContent = `${e.curso?.nivel?.nombre || ''} ${e.curso?.letra || ''}`;
+        document.getElementById('asignatura').textContent = e.asignatura?.nombre || '-';
+        document.getElementById('fecha').textContent = formatDate(e.fecha, false);
+        document.getElementById('duracion').textContent = e.duracion || '-';
+        document.getElementById('observador').textContent = e.observador?.nombre_completo || e.observador?.username || '-';
+
+        // Parsear comentarios JSON
+        let com = {};
+        try {
+            if (typeof e.comentarios === 'string') {
+                com = JSON.parse(e.comentarios);
+            } else if (e.comentarios) {
+                com = e.comentarios;
+            }
+        } catch(err){}
+
+        const isUTP = e.formato === 'UTP' || e.plantilla_id === 3;
+        const isOrientacion = e.formato === 'ORIENTACION' || e.plantilla_id === 2;
+        const isVisita = isUTP || isOrientacion;
+
+        // Guardar datos para el modal de desglose
+        actaState.data = e;
+
+        // I. Objetivo (dinámico según el contexto de la pauta)
+        renderObjetivo(isVisita);
+
+        // Botón de desglose: solo en modo Directivo (con puntaje) y si hay árbol de indicadores
+        const hasDetalle = Array.isArray(e.plantilla_detalle) && e.plantilla_detalle.length > 0;
+        const desgloseBtnHtml = (!isDocenteMode && hasDetalle)
+            ? `<button class="desglose-btn" onclick="openDesglose()">🔍 Ver Desglose de Indicadores</button>`
+            : '';
+
+        let dynamicHtml = '';
+
+        if (isUTP) {
+            // FORMATO UTP
+            let resultsHtml = '';
+            if (!isDocenteMode) {
+                const dimNames = e.dimensiones_nombres && e.dimensiones_nombres.length > 0 ? e.dimensiones_nombres : [
+                    'Dimensión 1: Creación de un ambiente propicio para el aprendizaje',
+                    'Dimensión 2: Modelo de enseñanza',
+                    'Dimensión 3: Uso del tiempo'
+                ];
+                const dims = [
+                    { label: dimNames[0] || 'Dimensión 1', val: e.promedio_dim1 },
+                    { label: dimNames[1] || 'Dimensión 2', val: e.promedio_dim2 },
+                    { label: dimNames[2] || 'Dimensión 3', val: e.promedio_dim3 }
+                ];
+                resultsHtml = `
+                    <div class="section">
+                        <h2 class="section-title"><span class="section-num">III.</span> Resultados Cuantitativos</h2>
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>Dimensión UTP</th>
+                                    <th style="width: 120px; text-align: center;">Resultado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${dims.map(d => {
+                                    const isNA = d.val === null || d.val === undefined || d.val === 0;
+                                    return `<tr><td>${d.label}</td><td class="promedio-cell"${isNA ? ' style="color: var(--text-muted);"' : ''}>${isNA ? 'N/A' : Number(d.val).toFixed(2)}</td></tr>`;
+                                }).join('')}
+                                <tr style="background:#003366; color:white; font-weight:800;">
+                                    <td style="border-radius: 0 0 0 12px;">PROMEDIO TOTAL</td>
+                                    <td class="promedio-cell" style="color:white; font-size:1.4rem; border-radius: 0 0 12px 0;">${e.promedio ? e.promedio.toFixed(2) : 'N/A'}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        ${desgloseBtnHtml}
+                    </div>
+                `;
+            }
+
+            const r = com.retroalimentacion || {};
+            const plan = com.plan_estrategico || [];
+
+            dynamicHtml = `
+                ${resultsHtml}
+
+                <!-- Observaciones Generales (UTP) -->
+                <div class="section">
+                    <h2 class="section-title"><span class="section-num">${!isDocenteMode ? 'IV' : 'III'}.</span> Observaciones Generales</h2>
+                    <div class="detail-box">
+                        <p class="detail-content">${com.observaciones_generales || 'Sin observaciones registradas.'}</p>
+                    </div>
+                </div>
+
+                <!-- Retroalimentación Descriptiva (UTP) -->
+                <div class="section">
+                    <h2 class="section-title"><span class="section-num">${!isDocenteMode ? 'V' : 'IV'}.</span> Retroalimentación Descriptiva</h2>
+                    <div class="info-grid" style="margin-bottom: 20px;">
+                        <div class="info-item">
+                            <label>Fecha Entrevista</label>
+                            <span>${r.fecha_entrevista ? formatDate(r.fecha_entrevista, false) : 'N/A'}</span>
+                        </div>
+                        <div class="info-item" style="grid-column: span 2;">
+                            <label>Hora Entrevista</label>
+                            <span>${r.hora_entrevista || 'N/A'}</span>
+                        </div>
+                    </div>
+                    <div class="detail-box">
+                        <span class="detail-label">Logros principales del docente según criterios:</span>
+                        <p class="detail-content">${r.logros || 'No se registraron logros específicos.'}</p>
+                    </div>
+                    <div class="detail-box">
+                        <span class="detail-label">Aspectos principales a mejorar según criterios:</span>
+                        <p class="detail-content">${r.mejoras || 'No se registraron aspectos a mejorar.'}</p>
+                    </div>
+                    <div class="detail-box">
+                        <span class="detail-label">Síntesis y Acuerdos con docente / Seguimiento próxima visita:</span>
+                        <p class="detail-content">${r.sintesis_acuerdos || 'Sin síntesis registrada.'}</p>
+                    </div>
+                </div>
+
+                <!-- Plan Estratégico de Cambios (UTP) -->
+                <div class="section">
+                    <h2 class="section-title"><span class="section-num">${!isDocenteMode ? 'VI' : 'V'}.</span> Plan Estratégico de Cambios</h2>
+                    ${plan.length > 0 ? `
+                    <div class="plan-list">
+                        ${plan.map((row, idx) => `
+                            <div class="plan-card">
+                                <div class="plan-card-head">
+                                    <span class="plan-num">${idx + 1}</span>
+                                    <div>
+                                        <span class="plan-field-label">Cambio acordado</span>
+                                        <p class="plan-cambio">${row.cambio || '-'}</p>
+                                    </div>
+                                </div>
+                                <div class="plan-card-body">
+                                    <div class="plan-acciones">
+                                        <span class="plan-field-label accent">Acciones</span>
+                                        <p class="plan-text">${row.acciones || '-'}</p>
+                                    </div>
+                                    <div class="plan-meta">
+                                        <div class="plan-chip">
+                                            <span class="plan-field-label">⏱ Tiempo</span>
+                                            <p class="plan-text">${row.tiempo || '-'}</p>
+                                        </div>
+                                        <div class="plan-chip">
+                                            <span class="plan-field-label">🧰 Recursos</span>
+                                            <p class="plan-text">${row.recursos || '-'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    ` : `<div class="detail-box" style="text-align: center; color: var(--text-muted); font-style: italic;">No se registraron cambios en el plan estratégico.</div>`}
+                </div>
+            `;
+        } else if (isOrientacion) {
+            // FORMATO ORIENTACION
+            let resultsHtml = '';
+            if (!isDocenteMode) {
+                const dimNames = e.dimensiones_nombres && e.dimensiones_nombres.length > 0 ? e.dimensiones_nombres : [
+                    'Dimensión 1', 'Dimensión 2', 'Dimensión 3', 'Dimensión 4', 'Dimensión 5'
+                ];
+                const dims = [];
+                if (e.promedio_dim1 !== null) dims.push({ label: dimNames[0] || 'Dimensión 1', val: e.promedio_dim1 });
+                if (e.promedio_dim2 !== null) dims.push({ label: dimNames[1] || 'Dimensión 2', val: e.promedio_dim2 });
+                if (e.promedio_dim3 !== null) dims.push({ label: dimNames[2] || 'Dimensión 3', val: e.promedio_dim3 });
+                if (e.promedio_dim4 !== null) dims.push({ label: dimNames[3] || 'Dimensión 4', val: e.promedio_dim4 });
+                if (e.promedio_dim5 !== null) dims.push({ label: dimNames[4] || 'Dimensión 5', val: e.promedio_dim5 });
+
+                resultsHtml = `
+                    <div class="section">
+                        <h2 class="section-title"><span class="section-num">III.</span> Resultados Cuantitativos</h2>
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>Dimensión</th>
+                                    <th style="width: 120px; text-align: center;">Resultado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${dims.map(d => {
+                                    const isNA = d.val === null || d.val === undefined || d.val === 0;
+                                    return `<tr><td>${d.label}</td><td class="promedio-cell">${isNA ? 'N/A' : d.val.toFixed(2)}</td></tr>`;
+                                }).join('')}
+                                <tr style="background:#003366; color:white; font-weight:800;">
+                                    <td style="border-radius: 0 0 0 12px;">PROMEDIO TOTAL</td>
+                                    <td class="promedio-cell" style="color:white; font-size:1.4rem; border-radius: 0 0 12px 0;">${e.promedio ? e.promedio.toFixed(2) : 'N/A'}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        ${desgloseBtnHtml}
+                    </div>
+                `;
+            }
+
+            let studentsHtml = '';
+            if (e.estudiantes_observados && e.estudiantes_observados.length > 0) {
+                const sectNum = !isDocenteMode ? 'IV' : 'III';
+                studentsHtml = `
+                    <div class="section">
+                        <h2 class="section-title"><span class="section-num">${sectNum}.</span> Estudiantes Disruptivos / Convivencia</h2>
+                        <table class="results-table" style="font-size: 0.95rem;">
+                            <thead>
+                                <tr style="background: #475569;">
+                                    <th style="padding: 12px; width: 50px; text-align: center;">#</th>
+                                    <th style="padding: 12px; width: 250px;">Nombre del Estudiante</th>
+                                    <th style="padding: 12px;">Conducta y Detalle Observado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${e.estudiantes_observados.map((st, idx) => `
+                                    <tr>
+                                        <td style="padding: 12px; text-align: center; font-weight: 700;">${idx + 1}</td>
+                                        <td style="padding: 12px; font-weight: 600; color: #1e293b;">${st.nombre_estudiante || '-'}</td>
+                                        <td style="padding: 12px; color: #334155;">${st.conducta_observada || '-'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+
+            const obsText = com.observaciones || '';
+            const retroText = com.retroalimentacion || '';
+            const finalSectNum = !isDocenteMode ? (studentsHtml ? 'V' : 'IV') : (studentsHtml ? 'IV' : 'III');
+
+            dynamicHtml = `
+                ${resultsHtml}
+                ${studentsHtml}
+                <div class="section">
+                    <h2 class="section-title"><span class="section-num">${finalSectNum}.</span> Observaciones y Retroalimentación</h2>
+                    <div class="space-y-4" style="display: flex; flex-direction: column; gap: 20px;">
+                        <div class="detail-box">
+                            <span class="detail-label">Observaciones:</span>
+                            <p class="detail-content">${obsText || 'Sin observaciones registradas.'}</p>
+                        </div>
+                        <div class="detail-box">
+                            <span class="detail-label">Retroalimentación:</span>
+                            <p class="detail-content">${retroText || 'Sin retroalimentación registrada.'}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            // FORMATO LIDERAZGO / GENERAL
+            let resultsHtml = '';
+            if (!isDocenteMode) {
+                const dimNames = e.dimensiones_nombres && e.dimensiones_nombres.length > 0 ? e.dimensiones_nombres : [
+                    'Dimensión 1: Comunicación',
+                    'Dimensión 2: Presencia de Liderazgo',
+                    'Dimensión 3: Organización del Aula',
+                    'Dimensión 4: Conducción del Grupo',
+                    'Dimensión 5: Coherencia y Consecuencia'
+                ];
+                const dims = [
+                    { label: dimNames[0], val: e.promedio_dim1 },
+                    { label: dimNames[1], val: e.promedio_dim2 },
+                    { label: dimNames[2], val: e.promedio_dim3 },
+                    { label: dimNames[3], val: e.promedio_dim4 },
+                    { label: dimNames[4], val: e.promedio_dim5 }
+                ];
+                resultsHtml = `
+                    <div class="section">
+                        <h2 class="section-title"><span class="section-num">III.</span> Resultados de Liderazgo</h2>
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>Dimensión de Liderazgo</th>
+                                    <th style="width: 120px; text-align: center;">Resultado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${dims.map(d => {
+                                    const isNA = d.val === null || d.val === undefined || d.val === 0;
+                                    return `<tr><td>${d.label}</td><td class="promedio-cell">${isNA ? 'N/A' : d.val.toFixed(2)}</td></tr>`;
+                                }).join('')}
+                                <tr style="background:#003366; color:white; font-weight:800;">
+                                    <td style="border-radius: 0 0 0 12px;">PROMEDIO TOTAL LIDERAZGO</td>
+                                    <td class="promedio-cell" style="color:white; font-size:1.4rem; border-radius: 0 0 12px 0;">${e.promedio ? e.promedio.toFixed(2) : 'N/A'}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="summary-card">
+                            <div class="card">
+                                <h4>Funcionamiento del Grupo</h4>
+                                <p>${e.func_grupo || '-'}</p>
+                            </div>
+                            <div class="card">
+                                <h4>Nivel de Liderazgo</h4>
+                                <p>${interpretarLiderazgo(e.promedio)}</p>
+                            </div>
+                        </div>
+                        ${desgloseBtnHtml}
+                    </div>
+                `;
+            }
+
+            const fortalezas = e.fortalezas_aspectos?.filter(f => f.tipo?.toLowerCase() === 'fortaleza').map(f => f.contenido).join('\n\n');
+            const aspectos = e.fortalezas_aspectos?.filter(f => f.tipo?.toLowerCase() === 'aspecto').map(f => f.contenido).join('\n\n');
+
+            let orientationHtml = '';
+            if (!isDocenteMode) {
+                const apoyosBadges = e.apoyos && e.apoyos.length > 0 
+                    ? e.apoyos.map(a => `<span class="badge">${a.apoyo}</span>`).join('')
+                    : '<span style="color:#94a3b8; font-style:italic;">No se sugirieron apoyos adicionales</span>';
+                
+                orientationHtml = `
+                    <div class="section">
+                        <h2 class="section-title"><span class="section-num">V.</span> Orientación y Desarrollo</h2>
+                        <div class="summary-card">
+                            <div class="card">
+                                <h4>Orientación para el Desarrollo</h4>
+                                <p>${e.orientacion || '-'}</p>
+                            </div>
+                            <div class="card" style="border-left-color: #0ea5e9;">
+                                <h4>Nivel de Apoyo Requerido</h4>
+                                <p>${e.nivel_apoyo || '-'}</p>
+                            </div>
+                        </div>
+                        <div style="margin-top: 25px;">
+                            <label class="detail-label">Tipos de Apoyo Sugeridos:</label>
+                            <div class="badge-list">${apoyosBadges}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            const comText = typeof e.comentarios === 'string' ? e.comentarios : (com.raw || '');
+
+            dynamicHtml = `
+                ${resultsHtml}
+
+                <div class="section">
+                    <h2 class="section-title"><span class="section-num">${!isDocenteMode ? 'IV' : 'III'}.</span> Observaciones de la Clase</h2>
+                    <div class="detail-box">
+                        <span class="detail-label">Fortalezas Observadas:</span>
+                        <p class="detail-content">${fortalezas || 'No se registraron fortalezas específicas.'}</p>
+                    </div>
+                    <div class="detail-box">
+                        <span class="detail-label">Aspectos a Fortalecer:</span>
+                        <p class="detail-content">${aspectos || 'No se registraron aspectos a fortalecer específicos.'}</p>
+                    </div>
+                </div>
+
+                ${orientationHtml}
+
+                <div class="section">
+                    <h2 class="section-title"><span class="section-num">${!isDocenteMode ? 'VI' : 'IV'}.</span> Retroalimentación PO</h2>
+                    <div class="info-grid" style="margin-bottom: 20px;">
+                        <div class="info-item">
+                            <label>Fecha de Retroalimentación</label>
+                            <span>${e.fecha_retro ? formatDate(e.fecha_retro, false) : 'Pendiente'}</span>
+                        </div>
+                        <div class="info-item" style="grid-column: span 2;">
+                            <label>Modalidad</label>
+                            <span>${e.modalidad_retro || 'No especificada'}</span>
+                        </div>
+                    </div>
+                    <div class="detail-box">
+                        <span class="detail-label">Síntesis de la Retroalimentación:</span>
+                        <p class="detail-content">${e.sintesis_retro || 'Sin síntesis registrada'}</p>
+                    </div>
+                    <div class="detail-box">
+                        <span class="detail-label">Sugerencias y Acuerdos de Mejora:</span>
+                        <p class="detail-content">${e.acuerdos_mejora || 'Sin acuerdos registrados'}</p>
+                    </div>
+                </div>
+
+                ${comText ? `
+                    <div class="section">
+                        <h2 class="section-title"><span class="section-num">${!isDocenteMode ? 'VII' : 'V'}.</span> Comentarios para el Desarrollo</h2>
+                        <div class="detail-box" style="background: #fffdf0; border-color: #fef08a;">
+                            <p class="detail-content">${comText}</p>
+                        </div>
+                    </div>
+                ` : ''}
+            `;
+        }
+
+        document.getElementById('dynamicSections').innerHTML = dynamicHtml;
+
+        // Firma
+        document.getElementById('codigoFirma').textContent = `AUTENTICACIÓN: ${e.codigo_firma}`;
+        document.getElementById('fechaFirma').textContent = formatDate(e.fecha_firma_docente, true);
+    }
+
+    function interpretarLiderazgo(promedio) {
+        if (promedio === null || promedio === undefined || promedio === 0) return 'N/A';
+        if (promedio >= 4.0) return 'Liderazgo Consolidado';
+        if (promedio >= 3.0) return 'Liderazgo Adecuado';
+        if (promedio >= 2.0) return 'Liderazgo en Desarrollo';
+        return 'Liderazgo Bajo';
+    }
+
+    function formatDate(dateStr, showTime) {
+        if (!dateStr) return '-';
+        const date = new Date(dateStr);
+        const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+        if (showTime) {
+            options.hour = '2-digit';
+            options.minute = '2-digit';
+        }
+        return date.toLocaleDateString('es-CL', options);
+    }
+
+    loadActa();
+</script>
+</body>
+</html>

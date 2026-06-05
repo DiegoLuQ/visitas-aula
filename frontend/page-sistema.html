@@ -1,0 +1,70 @@
+<!-- Página Sistema y Mantenimiento -->
+<div id="pageSistema" class="page">
+    <div class="page-header">
+        <h1>Sistema y Mantenimiento</h1>
+        <p style="color: #666; margin-top: 5px;">Control de tareas programadas y auditoría de envíos confidenciales.</p>
+    </div>
+
+    <div class="grid-2">
+        <!-- Acciones de Control -->
+        <div class="card" style="border-left: 4px solid #3498db;">
+            <div class="card-header">
+                <h3>⚡ Acciones de Control</h3>
+            </div>
+            <div class="card-body">
+                <p style="margin-bottom: 20px; font-size: 0.9em; color: #666;">
+                    Ejecute manualmente las tareas que normalmente ocurren de forma automática.
+                </p>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <button class="btn btn-primary" onclick="window.app.ejecutarReporteSemanal()" id="btnForceReport" style="justify-content: center;">
+                        📤 Forzar Envío Reporte de Gestión
+                    </button>
+                    <button class="btn btn-secondary" onclick="window.app.ejecutarRespaldoProgramado()" style="justify-content: center;">
+                        💾 Forzar Respaldo Programado (Email)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resumen de Configuración -->
+        <div class="card">
+            <div class="card-header">
+                <h3>ℹ️ Información del Sistema</h3>
+            </div>
+            <div class="card-body">
+                <ul style="list-style: none; padding: 0; font-size: 0.9em; color: #444;">
+                    <li style="margin-bottom: 10px;"><b>Versión Backend:</b> 2.0.0</li>
+                    <li style="margin-bottom: 10px;"><b>Próximo Reporte:</b> Lunes 08:45 AM</li>
+                    <li style="margin-bottom: 10px;"><b>Próximo Respaldo:</b> Viernes 18:00 PM</li>
+                    <li style="margin-bottom: 10px;"><b>Confidencialidad:</b> Todos los envíos quedan registrados en el historial de abajo.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historial de Envíos -->
+    <div class="card" style="margin-top: 30px;">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <h3>📋 Historial de Envíos y Tareas</h3>
+            <button class="btn btn-sm btn-outline" onclick="window.app.loadReportHistory()">🔄 Actualizar</button>
+        </div>
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Fecha y Hora</th>
+                        <th>Tipo</th>
+                        <th>Destinatarios</th>
+                        <th>Estado</th>
+                        <th>Detalle/Error</th>
+                    </tr>
+                </thead>
+                <tbody id="reportHistoryList">
+                    <tr>
+                        <td colspan="5" class="text-center">Cargando historial...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

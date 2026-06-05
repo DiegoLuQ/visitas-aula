@@ -1,0 +1,30 @@
+        <!-- Página Respaldo -->
+        <div id="pageRespaldo" class="page">
+            <div class="page-header">
+                <h1>Base de Datos y Respaldos</h1>
+            </div>
+            <div class="backup-container">
+                <div class="backup-card">
+                    <div class="backup-icon">💾</div>
+                    <h3>Respaldo Manual</h3>
+                    <p>Descarga una copia completa de la base de datos en formato SQL.</p>
+                    <button class="btn btn-primary" onclick="descargarRespaldo()">Descargar SQL</button>
+                </div>
+                <div class="backup-card">
+                    <div class="backup-icon">📧</div>
+                    <h3>Respaldo por Correo</h3>
+                    <p>Recibe el respaldo directamente en tu bandeja de entrada.</p>
+                    <button class="btn btn-secondary" onclick="enviarRespaldoEmail()">Enviar por Correo</button>
+                    <button class="btn btn-outline" style="margin-top: 10px; font-size: 0.8em;" onclick="window.app.ejecutarRespaldoProgramado()">
+                        ⚡ Forzar Respaldo Programado
+                    </button>
+                </div>
+
+                <div class="backup-card">
+                    <div class="backup-icon">⚙️</div>
+                    <h3>Mantenimiento</h3>
+                    <p>Limpieza de archivos temporales y optimización.</p>
+                    <button class="btn btn-outline" onclick="optimizarDB()">Optimizar</button>
+                </div>
+            </div>
+        </div>

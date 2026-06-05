@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Sistema de Liderazgo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        indigo: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                        },
+                        slate: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            400: '#94a3b8',
+                            500: '#64748b',
+                            900: '#0f172a',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Plus Jakarta Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/sidebar.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/forms.css">
+    <link rel="stylesheet" href="css/tables.css">
+    <link rel="stylesheet" href="css/modals.css">
+    <link rel="stylesheet" href="css/pdf-export.css">
+    <link rel="stylesheet" href="css/rubric.css">
+    <link rel="stylesheet" href="css/reportes.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/slim-select/2.8.2/slimselect.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/slim-select/2.8.2/slimselect.min.js"></script>
+</head>
+
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="header-main">
+                <h2>Liderazgo</h2>
+                <p>Sistema de Acompañamiento</p>
+            </div>
+            <button id="sidebarToggle" class="sidebar-toggle-btn">
+                <span class="toggle-icon">❮</span>
+            </button>
+        </div>
+        <nav class="sidebar-nav">
+            <div id="liderazgoMenu" class="nav-group">
+                <div class="nav-divider">Liderazgo</div>
+                <a href="#" class="nav-item active" data-page="inicio">
+                    <span class="icon">📊</span> <span class="nav-text">Inicio</span>
+                </a>
+                <a href="#" class="nav-item" data-page="evaluaciones">
+                    <span class="icon">📝</span> <span class="nav-text">Acompañamientos</span>
+                </a>
+                <a href="#" class="nav-item" data-page="nueva-evaluacion">
+                    <span class="icon">➕</span> <span class="nav-text">Nuevo Acompañamiento</span>
+                </a>
+            </div>
+
+            <div id="visitasMenu" class="nav-group" style="display: none;">
+                <div class="nav-divider">Visitas a Aula</div>
+                <a href="#" class="nav-item" data-page="visitas-dashboard">
+                    <span class="icon">📊</span> <span class="nav-text">Dashboard Visitas</span>
+                </a>
+                <a href="#" class="nav-item" data-page="visitas-nueva">
+                    <span class="icon">🏫</span> <span class="nav-text">Nueva Visita</span>
+                </a>
+                <a href="#" class="nav-item" data-page="visitas-historial">
+                    <span class="icon">📜</span> <span class="nav-text">Historial</span>
+                </a>
+            </div>
+
+            <div id="adminMenu" class="admin-section" style="display: none;">
+                <div class="nav-group">
+                    <div class="nav-divider">Administración</div>
+                    <a href="#" class="nav-item" data-page="colegios">
+                        <span class="icon">🏫</span> <span class="nav-text">Colegios</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="docentes">
+                        <span class="icon">👨‍🏫</span> <span class="nav-text">Docentes</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="cursos">
+                        <span class="icon">📚</span> <span class="nav-text">Cursos</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="asignaturas">
+                        <span class="icon">📖</span> <span class="nav-text">Asignaturas</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="plantilla">
+                        <span class="icon">📋</span> <span class="nav-text">Plantilla</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="reportes">
+                        <span class="icon">📈</span> <span class="nav-text">Reportes y KPIs</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="metas">
+                        <span class="icon">🎯</span> <span class="nav-text">Metas</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="usuarios" id="navUsuarios">
+                        <span class="icon">👥</span> <span class="nav-text">Usuarios</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="sistema">
+                        <span class="icon">💻</span> <span class="nav-text">Sistema</span>
+                    </a>
+                </div>
+            </div>
+
+            <div id="backupMenu" class="nav-group sidebar-config border-top">
+                <div class="nav-divider">Configuración</div>
+                <a href="#" class="nav-item" data-page="config-emails">
+                    <span class="icon">⚙️</span> <span class="nav-text">Destinatarios Correo</span>
+                </a>
+                <a href="#" class="nav-item" data-page="respaldo">
+                    <span class="icon">💾</span> <span class="nav-text">Respaldos SQL</span>
+                </a>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-profile">
+                <div id="userAvatar" class="user-avatar">A</div>
+                <div class="user-info">
+                    <span id="userDisplay" class="user-name">Admin</span>
+                    <span id="roleDisplay" class="user-role">Administrador</span>
+                </div>
+            </div>
+            <div class="footer-actions">
+                <button id="btnLogout" class="btn-logout-new" title="Cerrar Sesión">
+                    <i class="fas fa-sign-out-alt"></i> <span>Cerrar</span>
+                </button>
+                <button id="btnSwitchPlatform" class="btn-switch-new" title="Cambiar Plataforma">
+                    <i class="fas fa-exchange-alt"></i>
+                </button>
+            </div>
+            <div class="sidebar-version">V1.00.05</div>
+        </div>
+    </div>
+
+    <!-- Mobile Header -->
+    <div class="mobile-header">
+        <button id="mobileMenuBtn" class="mobile-menu-btn">
+            <span></span><span></span><span></span>
+        </button>
+        <div class="mobile-logo">Liderazgo</div>
+    </div>
+
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+    <main class="main-content" id="mainContent">
+        <div class="text-center p-5">
+            <div class="spinner"></div>
+            <p>Cargando sistema...</p>
+        </div>
+    </main>
+
+    <!-- Overlays -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p id="loadingText">Cargando...</p>
+        </div>
+    </div>
+
+    <div id="modalOverlay" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modalTitle">Modal</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+
+    <div id="pdfPreviewOverlay" class="modal-overlay" style="z-index: 9999;">
+        <div class="modal" style="width: 95vw; max-width: 1200px; height: 90vh; display: flex; flex-direction: column;">
+            <div class="modal-header">
+                <h3>📄 Vista Previa del Documento</h3>
+                <button class="modal-close" onclick="cerrarPreviewPDF()">&times;</button>
+            </div>
+            <div style="flex: 1; overflow: hidden; background: #525659;">
+                <iframe id="pdfPreviewFrame" style="width:100%; height:100%; border: none;"></iframe>
+            </div>
+            <div class="modal-footer" style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 15px 25px; display: flex; justify-content: flex-end; gap: 10px;">
+                <button class="btn btn-secondary" onclick="cerrarPreviewPDF()">Cerrar</button>
+                <button class="btn btn-success" onclick="descargarPDF()">
+                    <i class="fas fa-download"></i> Descargar PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alerts and User Modals -->
+    <div id="alertOverlay" class="modal-overlay">
+        <div class="modal" style="max-width: 450px;">
+            <div class="modal-header" id="alertHeader">
+                <h3 id="alertTitle">Aviso</h3>
+                <button class="modal-close" onclick="closeAlert()">&times;</button>
+            </div>
+            <div class="modal-body" id="alertBody" style="text-align: center; padding: 30px 20px;"></div>
+            <div class="modal-footer" style="justify-content: center;">
+                <button class="btn btn-primary" onclick="closeAlert()">Entendido</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="confirmOverlay" class="modal-overlay">
+        <div class="modal" style="max-width: 450px;">
+            <div class="modal-header" id="confirmHeader" style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+                <h3 id="confirmTitle" style="color: #0f172a; font-weight: 700;">Confirmar acción</h3>
+                <button class="modal-close" onclick="closeConfirm()">&times;</button>
+            </div>
+            <div class="modal-body" id="confirmBody" style="text-align: center; padding: 30px 20px;"></div>
+            <div class="modal-footer" style="justify-content: center; gap: 12px; background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 15px 25px; border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                <button class="btn btn-secondary" onclick="closeConfirm()">Cancelar</button>
+                <button class="btn btn-danger" id="confirmBtnOk">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalUsuario" class="modal-overlay">
+        <div class="modal" style="max-width: 550px;">
+            <form id="formUsuario">
+                <div class="modal-header">
+                    <h3 id="modalUsuarioTitle">Agregar Usuario</h3>
+                    <button type="button" class="modal-close" onclick="window.app.closeUserModal()">&times;</button>
+                </div>
+                <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
+                    <input type="hidden" id="editUserId">
+                    
+                    <div class="form-group">
+                        <label>Nombre de Usuario *</label>
+                        <input type="text" id="editUserUsername" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nombre Completo</label>
+                        <input type="text" id="editUserNombreCompleto" class="form-control" placeholder="Nombre y apellido">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email *</label>
+                        <input type="email" id="editUserEmail" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Contraseña <span id="passwordRequiredStar">*</span></label>
+                        <input type="password" id="editUserPassword" class="form-control">
+                        <small id="passwordHelp" class="text-light" style="display: block; margin-top: 4px; color: var(--text-light);"></small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Rol *</label>
+                        <select id="editUserRol" class="form-select" required>
+                            <!-- Se carga dinámicamente -->
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Acceso a Plataforma *</label>
+                        <select id="editUserAcceso" class="form-select" required>
+                            <option value="todos">Todos los Módulos</option>
+                            <option value="liderazgo">Liderazgo (Acompañamiento)</option>
+                            <option value="visita">Visitas a Aula</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Colegios Asociados</label>
+                        <div id="editUserColegioContainer" class="colegio-checkbox-container">
+                            <!-- Se carga dinámicamente -->
+                        </div>
+                        <small class="text-light" style="display: block; margin-top: 4px; color: var(--text-light);">Seleccione los colegios a los que tendrá acceso.</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Estado *</label>
+                        <select id="editUserActivo" class="form-select" required>
+                            <option value="1">Activo</option>
+                            <option value="0">Inactivo</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="window.app.closeUserModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para Configuración de Firma Digital (TOTP) -->
+    <div id="modalTotpOverlay" class="modal-overlay" style="z-index: 9999;">
+        <div class="modal" style="max-width: 620px;">
+            <div class="modal-header">
+                <h3>Configurar Firma Digital</h3>
+                <button class="modal-close" onclick="window.app.closeModalTotp()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin: 0 0 14px; color: var(--text-light); font-size: 0.9rem;">Escanee el código con <strong>Google Authenticator</strong> o <strong>Microsoft Authenticator</strong> e ingrese el código de 6 dígitos.</p>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; align-items: center;">
+                    <!-- Columna 1: QR -->
+                    <div style="display: flex; justify-content: center; background: white; padding: 12px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);" id="qrcodeContainer"></div>
+
+                    <!-- Columna 2: Datos del docente + código -->
+                    <div style="text-align: left;">
+                        <div style="background: #f0f7ff; padding: 12px; border-radius: 12px; margin-bottom: 14px; border: 1px solid #e0f2fe;">
+                            <div id="totpDocenteNombre" style="font-weight: 700; color: #004080; font-size: 1.05em;"></div>
+                            <div id="totpDocenteRut" style="font-size: 0.85em; color: #64748b; margin-top: 4px;"></div>
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label style="display: block; margin-bottom: 6px; font-weight: 600; color: var(--text-dark); font-size: 0.85rem;">Código de verificación:</label>
+                            <input type="text" id="totpVerifyCode" class="form-control" placeholder="000000" maxlength="6"
+                                   style="text-align: center; font-size: 1.5em; letter-spacing: 6px; font-weight: 800; border: 2px solid #e2e8f0; border-radius: 12px; height: 52px;">
+                            <small style="display: block; margin-top: 6px; color: var(--text-light); text-align: center;">El código cambia cada 30 segundos</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 15px 25px; border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                <button class="btn btn-secondary" onclick="window.app.closeModalTotp()">Cancelar</button>
+                <button class="btn btn-primary" id="btnConfirmTotp" style="padding: 10px 25px;">
+                    <i class="fas fa-link"></i> Vincular Firma
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Proceso de Firma de Acompañamiento -->
+    <div id="modalSignatureOverlay" class="modal-overlay" style="z-index: 10000;">
+        <div class="modal" style="max-width: 500px;">
+            <div class="modal-header" style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+                <h3 style="color: #0f172a; font-weight: 700;">✍️ Firma de Acompañamiento</h3>
+                <button class="modal-close" onclick="window.app.closeModalSignature()">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 30px; text-align: center;">
+                <div style="background: #eff6ff; padding: 20px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #dbeafe;">
+                    <p style="color: #1e40af; font-size: 0.95rem; line-height: 1.5; margin: 0;">
+                        Para finalizar y cerrar este acompañamiento, ingrese el código de 6 dígitos generado en su aplicación de autenticación.
+                    </p>
+                </div>
+
+                <div id="signatureModalQRContainer" style="display: none;"></div>
+
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label style="display: block; margin-bottom: 12px; font-weight: 600; color: #334155; text-align: left;">
+                        Código de Firma (TOTP):
+                    </label>
+                    <input type="text" id="manualSignatureCode" class="form-control" placeholder="000000" maxlength="6"
+                           style="text-align: center; font-size: 2em; letter-spacing: 10px; font-weight: 800; border: 2px solid var(--primary); border-radius: 12px; height: 70px; color: var(--primary); background: #fff;">
+                    
+                    <p id="manualSignError" style="display: none; color: #ef4444; margin-top: 12px; font-weight: 600; font-size: 0.9rem;">
+                        <i class="fas fa-exclamation-circle"></i> Código incorrecto. Reintente.
+                    </p>
+                </div>
+            </div>
+            <div class="modal-footer" style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 20px 30px; border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                <button class="btn btn-secondary" onclick="window.app.closeModalSignature()" style="padding: 12px 20px;">Cancelar</button>
+                <button class="btn btn-success" onclick="window.app.submitManualSignature(false)" style="padding: 12px 30px; font-weight: 600; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);">
+                    <i class="fas fa-check-circle"></i> Confirmar y Firmar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script type="module" src="js/main.js"></script>
+</body>
+
+</html>

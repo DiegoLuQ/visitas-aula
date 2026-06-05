@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firma de Acompañamiento - Sistema de Acompañamiento Docente</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .gradient-text { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+
+    <div id="loading" class="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center">
+        <div class="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p class="text-slate-500 font-bold animate-pulse">Cargando acta de acompañamiento...</p>
+    </div>
+
+    <div id="content" class="hidden w-full max-w-2xl bg-white rounded-[40px] shadow-2xl overflow-hidden border border-slate-100">
+        <!-- Header -->
+        <div class="bg-slate-900 p-6 md:p-10 text-white relative overflow-hidden">
+            <div class="relative z-10">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-indigo-500/30">Firma Remota Segura</span>
+                </div>
+                <h1 class="text-2xl md:text-3xl font-black italic tracking-tight">ACTA DE ACOMPAÑAMIENTO</h1>
+                <p id="evalInfo" class="text-slate-400 text-sm mt-2 font-medium"></p>
+            </div>
+            <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-indigo-600/20 rounded-full blur-3xl"></div>
+        </div>
+
+        <!-- Body -->
+        <div class="p-8 md:p-12">
+            <div class="mb-10 text-center">
+                <p class="text-slate-600 leading-relaxed">
+                    Estimado/a docente, se ha generado el acta de su acompañamiento. Por favor, revise la información y proceda a firmar digitalmente el documento para cerrar el proceso pedagógico.
+                </p>
+            </div>
+
+            <!-- Resumen de Acompañamiento -->
+            <div class="bg-slate-50 rounded-3xl p-5 md:p-8 mb-8 md:mb-10 border border-slate-100 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="flex flex-col">
+                    <span class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Docente Visitado</span>
+                    <span id="evalDocente" class="font-bold text-slate-800 text-base">Cargando...</span>
+                </div>
+                <div class="flex flex-col border-t border-slate-200 pt-4 md:border-t-0 md:pt-0 md:border-l md:pl-6">
+                    <span class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Realizado Por</span>
+                    <span id="evalObservador" class="font-bold text-slate-800 text-base">Cargando...</span>
+                </div>
+                <div class="flex flex-col border-t border-slate-200 pt-4 md:border-t-0 md:pt-0 md:border-l md:pl-6">
+                    <span class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Fecha Retroalimentación</span>
+                    <span id="evalFechaRetro" class="font-bold text-slate-800 text-base">Cargando...</span>
+                </div>
+            </div>
+
+            <!-- Action Area -->
+            <div id="actionArea" class="space-y-6">
+                <div class="flex flex-col gap-4">
+                    <button id="btnVerPauta" class="w-full bg-white border-2 border-slate-200 text-slate-700 py-5 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-50 transition-all flex items-center justify-center gap-3">
+                        <i class="fas fa-file-alt"></i>
+                        Ver Detalle de la Pauta
+                    </button>
+                    
+                    <div id="signatureSection" class="p-6 bg-indigo-50 rounded-3xl border border-indigo-100">
+                        <p class="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-4 text-center">Confirmación de Firma</p>
+                        <button id="btnFirmar" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-6 rounded-2xl font-black uppercase tracking-widest text-sm shadow-xl shadow-indigo-200 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-3">
+                            <i class="fas fa-check-circle text-lg"></i>
+                            FIRMADA DIGITALMENTE ACTA
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="signedArea" class="hidden text-center p-10 bg-emerald-50 rounded-[40px] border border-emerald-100">
+                <div class="w-20 h-20 bg-emerald-500 text-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-emerald-200">
+                    <i class="fas fa-check text-3xl"></i>
+                </div>
+                <h3 class="text-2xl font-black text-emerald-900 mb-2">¡Acta Firmada con Éxito!</h3>
+                <p class="text-emerald-700 text-sm font-medium mb-6">El documento ha sido cerrado con éxito.</p>
+                <div class="inline-block px-6 py-2 bg-white rounded-full border border-emerald-200 text-emerald-600 text-[10px] font-black uppercase tracking-widest">
+                    CÓDIGO DE VERIFICACIÓN: <span id="verifCode" class="ml-2 font-mono text-xs">--------</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-6 bg-slate-50 text-center border-t border-slate-100">
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sistema de Acompañamiento Docente &copy; 2026</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { api } from './js/api.js';
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        let evaluation = null;
+
+        function formatDate(dateStr) {
+            if (!dateStr) return 'N/A';
+            const parts = dateStr.split('-');
+            if (parts.length === 3) {
+                return `${parts[2]}/${parts[1]}/${parts[0]}`;
+            }
+            return new Date(dateStr).toLocaleDateString('es-CL');
+        }
+
+        async function init() {
+            if (!token) {
+                document.body.innerHTML = '<div class="text-center p-10 bg-red-50 text-red-600 rounded-3xl font-bold">Error: Token de firma no proporcionado o inválido.</div>';
+                return;
+            }
+
+            try {
+                const res = await fetch(`${api.baseUrl}/evaluaciones/public-info?token=${token}`);
+                if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    throw new Error(data.detail || 'Token expirado o inválido');
+                }
+                
+                evaluation = await res.json();
+                renderEvaluation();
+            } catch (error) {
+                console.error(error);
+                document.body.innerHTML = `
+                    <div class="text-center p-10 bg-amber-50 text-amber-700 rounded-3xl border border-amber-200 max-w-md">
+                        <i class="fas fa-clock text-4xl mb-4 text-amber-500"></i>
+                        <h3 class="text-xl font-black mb-2">ENLACE EXPIRADO O ERROR</h3>
+                        <p class="text-sm font-medium leading-relaxed">Por seguridad, los enlaces de firma tienen una validez de 24 horas. Por favor, solicite un nuevo enlace a su observador.</p>
+                        <p class="text-xs text-amber-600 mt-4 font-mono">Detalle: ${error.message}</p>
+                    </div>`;
+            } finally {
+                document.getElementById('loading').classList.add('hidden');
+            }
+        }
+
+        function renderEvaluation() {
+            document.getElementById('content').classList.remove('hidden');
+            document.getElementById('evalInfo').textContent = `Folio #${evaluation.id} | Docente: ${evaluation.docente_nombre}`;
+            document.getElementById('evalDocente').textContent = evaluation.docente_nombre;
+            document.getElementById('evalObservador').textContent = evaluation.observador_nombre;
+            document.getElementById('evalFechaRetro').textContent = formatDate(evaluation.fecha_retro || evaluation.fecha);
+
+            if (evaluation.estado === 'FIRMADA') {
+                showSuccess(evaluation.codigo_firma);
+            }
+        }
+
+        function showSuccess(code) {
+            document.getElementById('actionArea').classList.add('hidden');
+            document.getElementById('signedArea').classList.remove('hidden');
+            document.getElementById('verifCode').textContent = code;
+        }
+
+        document.getElementById('btnVerPauta').addEventListener('click', async () => {
+            try {
+                // Mostrar un estado de carga temporal
+                const btn = document.getElementById('btnVerPauta');
+                const originalText = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-circle-notch animate-spin"></i> Cargando detalle...';
+
+                const res = await fetch(`${api.baseUrl}/evaluaciones/public-detail?token=${token}`);
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+
+                if (!res.ok) throw new Error('No se pudo cargar el detalle');
+                const details = await res.json();
+
+                const com = details.comentarios || {};
+                let sectionsHtml = '';
+
+                const isUTP = details.formato === 'UTP' || details.plantilla_id === 3;
+                const isOrientacion = details.formato === 'ORIENTACION' || details.plantilla_id === 2;
+
+                if (isUTP) {
+                    // FORMATO UTP
+                    const r = com.retroalimentacion || {};
+                    const plan = com.plan_estrategico || [];
+
+                    sectionsHtml = `
+                        <!-- II. Observaciones de la Clase (UTP) -->
+                        <div>
+                            <div class="flex items-center gap-3 mb-4">
+                                <span class="text-xs font-black uppercase tracking-wider text-indigo-600">II. OBSERVACIONES GENERALES</span>
+                                <div class="h-[1px] bg-slate-200 flex-1"></div>
+                            </div>
+                            <div class="bg-white border border-slate-200 p-4 rounded-xl">
+                                <p class="text-slate-700 text-xs leading-relaxed whitespace-pre-wrap">${com.observaciones_generales || 'Sin observaciones registradas.'}</p>
+                            </div>
+                        </div>
+
+                        <!-- III. Retroalimentación Descriptiva (UTP) -->
+                        <div>
+                            <div class="flex items-center gap-3 mb-4">
+                                <span class="text-xs font-black uppercase tracking-wider text-indigo-600">III. RETROALIMENTACIÓN DESCRIPTIVA</span>
+                                <div class="h-[1px] bg-slate-200 flex-1"></div>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl text-xs mb-3">
+                                    <div>
+                                        <span class="block text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1">Fecha Entrevista</span>
+                                        <span class="font-bold text-slate-700">${r.fecha_entrevista ? formatDate(r.fecha_entrevista) : 'N/A'}</span>
+                                    </div>
+                                    <div>
+                                        <span class="block text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1">Hora Entrevista</span>
+                                        <span class="font-bold text-slate-700">${r.hora_entrevista || 'N/A'}</span>
+                                    </div>
+                                </div>
+                                <div class="bg-white border border-slate-200 p-4 rounded-xl">
+                                    <span class="block text-[10px] font-bold text-indigo-600 uppercase mb-1">Logros principales del docente según criterios</span>
+                                    <p class="text-slate-700 text-xs leading-relaxed whitespace-pre-wrap">${r.logros || 'No se registraron logros específicos.'}</p>
+                                </div>
+                                <div class="bg-white border border-slate-200 p-4 rounded-xl">
+                                    <span class="block text-[10px] font-bold text-indigo-600 uppercase mb-1">Aspectos principales a mejorar según criterios</span>
+                                    <p class="text-slate-700 text-xs leading-relaxed whitespace-pre-wrap">${r.mejoras || 'No se registraron aspectos a mejorar.'}</p>
+                                </div>
+                                <div class="bg-white border border-slate-200 p-4 rounded-xl">
+                                    <span class="block text-[10px] font-bold text-indigo-600 uppercase mb-1">Síntesis y Acuerdos con docente / Seguimiento próxima visita</span>
+                                    <p class="text-slate-700 text-xs leading-relaxed whitespace-pre-wrap">${r.sintesis_acuerdos || 'Sin síntesis registrada.'}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- IV. Plan Estratégico de Cambios (UTP) -->
+                        <div>
+                            <div class="flex items-center gap-3 mb-4">
+                                <span class="text-xs font-black uppercase tracking-wider text-indigo-600">IV. PLAN ESTRATÉGICO DE CAMBIOS</span>
+                                <div class="h-[1px] bg-slate-200 flex-1"></div>
+                            </div>
+                            <div class="overflow-x-auto border border-slate-200 rounded-xl bg-white">
+                                <table class="w-full text-xs text-left">
+                                    <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase font-black text-[9px]">
+                                        <tr>
+                                            <th class="p-3">Cambio acordado</th>
+                                            <th class="p-3">Acciones</th>
+                                            <th class="p-3">Tiempo</th>
+                                            <th class="p-3">Recursos</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-100">
+                                        ${plan.length > 0 ? plan.map(row => `
+                                            <tr>
+                                                <td class="p-3 font-semibold text-slate-700">${row.cambio || '-'}</td>
+                                                <td class="p-3 text-slate-600">${row.acciones || '-'}</td>
+                                                <td class="p-3 text-slate-600">${row.tiempo || '-'}</td>
+                                                <td class="p-3 text-slate-600">${row.recursos || '-'}</td>
+                                            </tr>
+                                        `).join('') : `<tr><td colspan="4" class="p-4 text-center text-slate-400 italic">No se registraron cambios en el plan estratégico.</td></tr>`}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                } else if (isOrientacion) {
+                    // FORMATO OBSERVACIÓN DE AULA / ORIENTACIÓN / GENERAL
+                    const obsText = com.observaciones || '';
+                    const retroText = com.retroalimentacion || '';
+
+                    sectionsHtml = `
+                        <!-- V. Observaciones y Retroalimentación -->
+                        <div>
+                            <div class="flex items-center gap-3 mb-4">
+                                <span class="text-xs font-black uppercase tracking-wider text-indigo-600">V. OBSERVACIONES Y RETROALIMENTACIÓN</span>
+                                <div class="h-[1px] bg-slate-200 flex-1"></div>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="bg-white border border-slate-200 p-4 rounded-xl">
+                                    <span class="block text-[10px] font-bold text-indigo-600 uppercase mb-1">Observaciones</span>
+                                    <p class="text-slate-700 text-xs leading-relaxed whitespace-pre-wrap">${obsText || 'Sin observaciones registradas.'}</p>
+                                </div>
+                                <div class="bg-white border border-slate-200 p-4 rounded-xl">
+                                    <span class="block text-[10px] font-bold text-indigo-600 uppercase mb-1">Retroalimentación</span>
+                                    <p class="text-slate-700 text-xs leading-relaxed whitespace-pre-wrap">${retroText || 'Sin retroalimentación registrada.'}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // FORMATO OBSERVACIÓN DE AULA / ORIENTACIÓN / GENERAL
+                    const obsText = com.observaciones || '';
+                    const retroText = com.retroalimentacion || details.sintesis_retro || '';
+                    const fortalezas = details.fortalezas_aspectos?.filter(fa => fa.tipo?.toLowerCase() === 'fortaleza').map(fa => fa.contenido).join('\n\n');
+                    const aspectos = details.fortalezas_aspectos?.filter(fa => fa.tipo?.toLowerCase() === 'aspecto').map(fa => fa.contenido).join('\n\n');
+
+                    sectionsHtml = `
+                        <!-- II. Observaciones de la Clase -->
+                        <div>
+                            <div class="flex items-center gap-3 mb-4">
+                                <span class="text-xs font-black uppercase tracking-wider text-indigo-600">II. OBSERVACIONES DE LA CLASE</span>
+                                <div class="h-[1px] bg-slate-200 flex-1"></div>
+                            </div>
+                            <div class="space-y-3">
+                                ${fortalezas || aspectos ? `
+                                    <div class="bg-white border border-slate-200 p-4 rounded-xl">
+                                        <span class="block text-[10px] font-bold text-indigo-600 uppercase mb-1">Fortalezas Observadas</span>
+                                        <p class="text-slate-700 text-xs leading-relaxed whitespace-pre-wrap">${fortalezas || 'No se registraron fortalezas específicas.'}</p>
+                                    </div>
+                                    <div class="bg-white border border-slate-200 p-4 rounded-xl">
+                                        <span class="block text-[10px] font-bold text-indigo-600 uppercase mb-1">Aspectos a Fortalecer</span>
+                                        <p class="text-slate-700 text-xs leading-relaxed whitespace-pre-wrap">${aspectos || 'No se registraron aspectos a fortalecer.'}</p>
+                                    </div>
+                                ` : ''}
+                                ${obsText ? `
+                                    <div class="bg-white border border-slate-200 p-4 rounded-xl">
+                                        <span class="block text-[10px] font-bold text-indigo-600 uppercase mb-1">Observaciones Generales</span>
+                                        <p class="text-slate-700 text-xs leading-relaxed whitespace-pre-wrap">${obsText}</p>
+                                    </div>
+                                ` : ''}
+                                ${!fortalezas && !aspectos && !obsText ? `
+                                    <div class="bg-white border border-slate-200 p-4 rounded-xl text-center text-slate-400 italic">
+                                        No hay observaciones registradas.
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+
+                        <!-- III. Retroalimentación -->
+                        <div>
+                            <div class="flex items-center gap-3 mb-4">
+                                <span class="text-xs font-black uppercase tracking-wider text-indigo-600">III. RETROALIMENTACIÓN</span>
+                                <div class="h-[1px] bg-slate-200 flex-1"></div>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl text-xs mb-3">
+                                    <div>
+                                        <span class="block text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1">Fecha de Retroalimentación</span>
+                                        <span class="font-bold text-slate-700">${details.fecha_retro ? formatDate(details.fecha_retro) : (details.fecha ? formatDate(details.fecha) : 'N/A')}</span>
+                                    </div>
+                                </div>
+                                <div class="bg-white border border-slate-200 p-4 rounded-xl">
+                                    <span class="block text-[10px] font-bold text-indigo-600 uppercase mb-1">Síntesis y Acuerdos de Retroalimentación</span>
+                                    <p class="text-slate-700 text-xs leading-relaxed whitespace-pre-wrap">${retroText || 'Sin síntesis registrada.'}</p>
+                                </div>
+                                ${details.acuerdos_mejora ? `
+                                    <div class="bg-white border border-slate-200 p-4 rounded-xl">
+                                        <span class="block text-[10px] font-bold text-indigo-600 uppercase mb-1">Acuerdos de Mejora</span>
+                                        <p class="text-slate-700 text-xs leading-relaxed whitespace-pre-wrap">${details.acuerdos_mejora}</p>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Generar modal final
+                const modalHtml = `
+                    <div id="modalDetallePauta" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 animate-fade-in">
+                        <div class="bg-white rounded-[24px] shadow-2xl w-full max-w-2xl overflow-hidden border-t-8 border-indigo-600 animate-in zoom-in duration-300">
+                            
+                            <div class="p-8 space-y-6 max-h-[75vh] overflow-y-auto">
+                                <!-- Header Document Style -->
+                                <div class="text-center pb-6 border-b border-slate-100 mb-6">
+                                    <h3 class="text-2xl font-black text-slate-800 tracking-tight">ACTA DE ACOMPAÑAMIENTO</h3>
+                                    <p class="text-xs text-slate-400 font-bold tracking-widest mt-1">FOLIO #${details.id}</p>
+                                </div>
+
+                                <!-- I. Datos Generales -->
+                                <div>
+                                    <div class="flex items-center gap-3 mb-4">
+                                        <span class="text-xs font-black uppercase tracking-wider text-indigo-600">I. DATOS GENERALES</span>
+                                        <div class="h-[1px] bg-slate-200 flex-1"></div>
+                                    </div>
+                                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 bg-slate-50 p-5 rounded-xl text-xs">
+                                        <div>
+                                            <span class="block text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1">Colegio</span>
+                                            <span class="font-bold text-slate-700">${details.colegio_nombre}</span>
+                                        </div>
+                                        <div>
+                                            <span class="block text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1">Docente</span>
+                                            <span class="font-bold text-slate-700">${details.docente_nombre}</span>
+                                        </div>
+                                        <div>
+                                            <span class="block text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1">Asignatura</span>
+                                            <span class="font-bold text-slate-700">${details.asignatura}</span>
+                                        </div>
+                                        <div>
+                                            <span class="block text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1">Curso</span>
+                                            <span class="font-bold text-slate-700">${details.curso}</span>
+                                        </div>
+                                        <div>
+                                            <span class="block text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1">Fecha Visita</span>
+                                            <span class="font-bold text-slate-700">${formatDate(details.fecha)}</span>
+                                        </div>
+                                        <div>
+                                            <span class="block text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1">Estado</span>
+                                            <span class="font-bold text-indigo-600">${details.estado}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                ${sectionsHtml}
+                            </div>
+
+                            <!-- Footer / Close -->
+                            <div class="p-6 bg-slate-50 text-center border-t border-slate-100 flex justify-center">
+                                <button onclick="document.getElementById('modalDetallePauta').remove()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl font-black uppercase tracking-widest text-xs transition-all shadow-lg shadow-indigo-100">
+                                    Cerrar Detalle
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+            } catch (err) {
+                alert('Error al cargar el detalle: ' + err.message);
+            }
+        });
+
+        document.getElementById('btnFirmar').addEventListener('click', async () => {
+            try {
+                const btn = document.getElementById('btnFirmar');
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-circle-notch animate-spin"></i> Procesando firma...';
+
+                const res = await fetch(`${api.baseUrl}/evaluaciones/public-sign-remote`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token })
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Error al firmar');
+
+                showSuccess(data.codigo_verificacion);
+            } catch (error) {
+                alert('Error: ' + error.message);
+                document.getElementById('btnFirmar').disabled = false;
+                document.getElementById('btnFirmar').innerHTML = '<i class="fas fa-check-circle text-lg"></i> FIRMADA DIGITALMENTE ACTA';
+            }
+        });
+
+        init();
+    </script>
+</body>
+</html>

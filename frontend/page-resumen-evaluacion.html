@@ -1,0 +1,28 @@
+<!-- Página Resumen Evaluación -->
+<div id="pageResumenEvaluacion" class="page">
+    <div class="page-header"
+        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <button class="btn btn-secondary" onclick="window.app.closeResumen()" title="Volver a Acompañamientos">
+                ← Volver
+            </button>
+            <h1 style="margin: 0; font-size: 1.5rem; color: #002b5e;">Detalle del Acompañamiento</h1>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button id="btnResendEmail" class="btn btn-outline-primary" style="display: none;"
+                onclick="window.app.showEmailResendModalFromHeader()">
+                <span class="icon">📧</span> Re-enviar Acta
+            </button>
+            <button class="btn btn-secondary" onclick="window.app.imprimirResumen()">
+                <span class="icon">🖨️</span> Imprimir
+            </button>
+            <button class="btn btn-primary" onclick="window.app.descargarPDF()">
+                <span class="icon">⬇️</span> Descargar PDF
+            </button>
+        </div>
+    </div>
+
+    <div id="resumenPageContent" class="resumen-content">
+        <!-- El contenido detallado será inyectado por JS aquí (mostrarResumen) -->
+    </div>
+</div>

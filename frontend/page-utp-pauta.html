@@ -1,0 +1,211 @@
+
+<section id="page-utp-pauta" class="page-section hidden">
+    <!-- Header Fijo con Progreso -->
+    <div class="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200 -mx-4 px-8 py-4 mb-8">
+        <div class="max-w-5xl mx-auto">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h2 class="text-2xl font-heading font-extrabold text-slate-900 tracking-tight">Pauta de Acompañamiento UTP</h2>
+                    <p class="text-slate-500 text-sm font-medium">Gestión de Calidad Educativa</p>
+                </div>
+                <div class="text-right">
+                    <span id="utpStepIndicator" class="text-xs font-bold text-indigo-600 uppercase tracking-widest bg-indigo-50 px-3 py-1 rounded-full">Paso 1 de 5</span>
+                </div>
+            </div>
+            <!-- Barra de Progreso Linear Style -->
+            <div class="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                <div id="utpProgressBar" class="h-full bg-gradient-to-r from-indigo-500 to-indigo-600 transition-all duration-500 ease-out" style="width: 20%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-5xl mx-auto px-4 pb-20">
+        <form id="utpForm" class="space-y-8">
+            <!-- PASO 1: Datos de Identificación -->
+            <div id="utpStep1" class="utp-step space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div class="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm">
+                    <div class="flex items-center gap-4 mb-8">
+                        <div class="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-200">
+                            <i class="fas fa-id-card text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-heading font-bold text-slate-900">Identificación de la Visita</h3>
+                            <p class="text-slate-500 text-sm">Información general del acompañamiento</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label class="text-sm font-bold text-slate-700 ml-1">Colegio</label>
+                            <select id="utpColegio" class="w-full bg-slate-50 border-none rounded-xl p-3.5 text-slate-700 focus:ring-4 focus:ring-indigo-500/10 focus:bg-white transition-all outline-none appearance-none" required>
+                                <option value="">Seleccione Colegio</option>
+                            </select>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-bold text-slate-700 ml-1">Docente</label>
+                            <select id="utpDocente" class="w-full bg-slate-50 border-none rounded-xl p-3.5 text-slate-700 focus:ring-4 focus:ring-indigo-500/10 focus:bg-white transition-all outline-none appearance-none" required disabled>
+                                <option value="">Seleccione Docente</option>
+                            </select>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-bold text-slate-700 ml-1">Curso</label>
+                            <select id="utpCurso" class="w-full bg-slate-50 border-none rounded-xl p-3.5 text-slate-700 focus:ring-4 focus:ring-indigo-500/10 focus:bg-white transition-all outline-none appearance-none" required>
+                                <option value="">Seleccione Curso</option>
+                            </select>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-bold text-slate-700 ml-1">Asignatura</label>
+                            <select id="utpAsignatura" class="w-full bg-slate-50 border-none rounded-xl p-3.5 text-slate-700 focus:ring-4 focus:ring-indigo-500/10 focus:bg-white transition-all outline-none appearance-none" required>
+                                <option value="">Seleccione Asignatura</option>
+                            </select>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-bold text-slate-700 ml-1">Fecha de Observación</label>
+                            <input type="date" id="utpFecha" class="w-full bg-slate-50 border-none rounded-xl p-3.5 text-slate-700 focus:ring-4 focus:ring-indigo-500/10 focus:bg-white transition-all outline-none" required>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-bold text-slate-700 ml-1">Hora / Duración</label>
+                            <input type="text" id="utpDuracion" placeholder="Ej: 45 min" class="w-full bg-slate-50 border-none rounded-xl p-3.5 text-slate-700 focus:ring-4 focus:ring-indigo-500/10 focus:bg-white transition-all outline-none">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PASO 2, 3, 4: Dimensiones (Se inyectan dinámicamente) -->
+            <div id="utpStep2" class="utp-step hidden space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+                <div id="utpDim1Container" class="space-y-4">
+                    <!-- Dinámico -->
+                </div>
+            </div>
+
+            <div id="utpStep3" class="utp-step hidden space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+                <div id="utpDim2Container" class="space-y-4">
+                    <!-- Dinámico -->
+                </div>
+            </div>
+
+            <div id="utpStep4" class="utp-step hidden space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+                <div id="utpDim3Container" class="space-y-4">
+                    <!-- Dinámico -->
+                </div>
+            </div>
+
+            <!-- PASO 5: Plan Estratégico y Acta -->
+            <div id="utpStep5" class="utp-step hidden space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+                <!-- Plan Estratégico -->
+                <div class="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm">
+                    <div class="flex items-center justify-between mb-8">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-emerald-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-200">
+                                <i class="fas fa-bullseye text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-heading font-bold text-slate-900">Plan Estratégico</h3>
+                                <p class="text-slate-500 text-sm">Compromisos para el fortalecimiento</p>
+                            </div>
+                        </div>
+                        <button type="button" onclick="app.addUtpPlanRow()" class="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-xl hover:bg-slate-800 transition-colors">
+                            <i class="fas fa-plus"></i> AGREGAR FILA
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="text-left border-b border-slate-100">
+                                    <th class="pb-4 text-xs font-bold text-slate-400 uppercase tracking-wider pl-2">Acciones / Compromisos</th>
+                                    <th class="pb-4 text-xs font-bold text-slate-400 uppercase tracking-wider w-1/4">Plazo</th>
+                                    <th class="pb-4 text-xs font-bold text-slate-400 uppercase tracking-wider w-16"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="utpPlanTableBody" class="divide-y divide-slate-50">
+                                <!-- Filas dinámicas -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Acta de Entrevista -->
+                <div class="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm">
+                    <div class="flex items-center gap-4 mb-8">
+                        <div class="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-200">
+                            <i class="fas fa-comments text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-heading font-bold text-slate-900">Acta de Entrevista de Retroalimentación</h3>
+                            <p class="text-slate-500 text-sm">Síntesis y acuerdos del proceso</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div class="space-y-2">
+                            <label class="text-sm font-bold text-slate-700 ml-1">Síntesis de la Entrevista</label>
+                            <textarea id="utpSintesis" placeholder="Resumen de la conversación..." class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm text-slate-700 focus:ring-4 focus:ring-indigo-500/10 focus:bg-white transition-all outline-none min-h-[120px]"></textarea>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-bold text-slate-700 ml-1">Acuerdos Alcanzados</label>
+                            <textarea id="utpAcuerdos" placeholder="Puntos acordados con el docente..." class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm text-slate-700 focus:ring-4 focus:ring-indigo-500/10 focus:bg-white transition-all outline-none min-h-[100px]"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer del Wizard -->
+            <div class="flex items-center justify-between pt-8 border-t border-slate-100">
+                <button type="button" id="btnUtpPrev" class="hidden flex items-center gap-2 px-6 py-3 border border-slate-200 rounded-2xl text-slate-600 font-bold hover:bg-slate-50 transition-all">
+                    <i class="fas fa-arrow-left"></i> ANTERIOR
+                </button>
+                <div class="flex-1"></div>
+                <button type="button" id="btnUtpNext" class="flex items-center gap-2 px-8 py-3 bg-indigo-600 text-white rounded-2xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all">
+                    <span>SIGUIENTE</span> <i class="fas fa-arrow-right"></i>
+                </button>
+                <button type="submit" id="btnUtpSave" class="hidden flex items-center gap-2 px-8 py-3 bg-emerald-600 text-white rounded-2xl font-bold shadow-lg shadow-emerald-200 hover:bg-emerald-700 transition-all">
+                    <i class="fas fa-save"></i> FINALIZAR Y GUARDAR
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Dashboard de Resultados Final (Hidden initially) -->
+    <div id="utpResultsDashboard" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+            <div class="bg-slate-900 p-8 text-white">
+                <h3 class="text-2xl font-heading font-extrabold tracking-tight">Resumen de Evaluación</h3>
+                <p class="text-slate-400 text-sm">Resultados calculados en tiempo real</p>
+            </div>
+            <div class="p-8 space-y-6">
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="bg-slate-50 rounded-2xl p-4 text-center">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Ambiente</span>
+                        <div id="resDim1" class="text-2xl font-bold text-slate-900">0.0</div>
+                    </div>
+                    <div class="bg-slate-50 rounded-2xl p-4 text-center">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Enseñanza</span>
+                        <div id="resDim2" class="text-2xl font-bold text-slate-900">0.0</div>
+                    </div>
+                    <div class="bg-slate-50 rounded-2xl p-4 text-center">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Tiempo</span>
+                        <div id="resDim3" class="text-2xl font-bold text-slate-900">0.0</div>
+                    </div>
+                </div>
+                
+                <div class="bg-indigo-600 rounded-3xl p-8 text-white flex items-center justify-between">
+                    <div>
+                        <h4 class="text-lg font-bold opacity-80">Puntaje Global</h4>
+                        <p id="resInterpretacion" class="text-indigo-100 text-sm">Nivel de desempeño...</p>
+                    </div>
+                    <div id="resGlobal" class="text-5xl font-extrabold tracking-tighter">0.0</div>
+                </div>
+
+                <div class="flex gap-3">
+                    <button type="button" onclick="document.getElementById('utpResultsDashboard').classList.add('hidden')" class="flex-1 py-4 bg-slate-100 text-slate-600 font-bold rounded-2xl hover:bg-slate-200 transition-colors">
+                        REVISAR DETALLE
+                    </button>
+                    <button type="button" onclick="app.confirmUtpSave()" class="flex-1 py-4 bg-slate-900 text-white font-bold rounded-2xl hover:bg-slate-800 transition-colors shadow-lg shadow-slate-200">
+                        CONFIRMAR Y GUARDAR
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

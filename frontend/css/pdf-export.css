@@ -1,0 +1,29 @@
+/* Professional Print and PDF Export Styles */
+
+@media print {
+    @page { margin: 1cm; }
+    .sidebar, .nav-group, .btn, .modal-close, .sidebar-footer { display: none !important; }
+    .main-content { margin-left: 0 !important; width: 100% !important; padding: 0 !important; }
+}
+
+.exporting-pdf {
+    background: white !important;
+    font-family: Arial, sans-serif !important;
+    padding: 20px !important;
+}
+
+.exporting-pdf .sidebar, .exporting-pdf .form-actions { display: none !important; }
+
+.exporting-pdf .form-section {
+    border: 1px solid #000 !important;
+    margin-bottom: 15px !important;
+    padding: 10px !important;
+    page-break-inside: avoid;
+}
+
+.exporting-pdf .dimension-header {
+    background: #f0f0f0 !important;
+    color: #000 !important;
+    border-bottom: 1px solid #000 !important;
+}
+/* ... etc (shortened for brevity but keeping essential structure) */

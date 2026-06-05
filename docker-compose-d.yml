@@ -1,0 +1,33 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mcdp_backend
+    ports:
+      - "${BACKEND_PORT}:8000"
+    networks:
+      - base_red_pme
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=${DOCKER_DATABASE_URL}
+      - SECRET_KEY=${SECRET_KEY}
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: mcdp_frontend
+    ports:
+      - "${FRONTEND_PORT}:80"
+    networks:
+      - base_red_pme
+    restart: always
+    depends_on:
+      - backend
+
+networks:
+  base_red_pme:
+    external: true

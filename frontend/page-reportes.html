@@ -1,0 +1,315 @@
+        <!-- Página Reportes -->
+        <div id="pageReportes" class="page">
+            <div class="page-header">
+                <h1>Reportes y Estadísticas</h1>
+                <div class="header-actions">
+                    <button class="btn btn-info" onclick="exportarReportePDF()"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
+                </div>
+            </div>
+
+            <!-- Filtros de Reporte -->
+            <div class="filters-bar">
+                <div class="filter-group">
+                    <label>Colegio:</label>
+                    <select id="repFilterColegio" class="form-select" onchange="actualizarReportes()">
+                        <option value="">Todos los colegios</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Asignatura:</label>
+                    <select id="repFilterAsignatura" class="form-select" onchange="actualizarReportes()">
+                        <option value="">Todas las asignaturas</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Desde:</label>
+                    <input type="date" id="repFechaInicio" class="form-control" onchange="actualizarReportes()">
+                </div>
+                <div class="filter-group">
+                    <label>Hasta:</label>
+                    <input type="date" id="repFechaFin" class="form-control" onchange="actualizarReportes()">
+                </div>
+                <div class="filter-group">
+                    <label>Año:</label>
+                    <select id="repFilterAnio" class="form-select" onchange="actualizarReportes()">
+                        <!-- Se poblará en reportes.js -->
+                    </select>
+                </div>
+            </div>
+
+            <!-- ===================== VISTA LIDERAZGO ===================== -->
+            <div id="reportesLiderazgoView">
+            <!-- KPIs -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon icon-evaluaciones"><i class="fas fa-file-alt"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="repStatTotal">0</span>
+                        <span class="stat-label">Evaluaciones</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-promedio"><i class="fas fa-star"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="repStatPromedio">0.00</span>
+                        <span class="stat-label">Promedio Global</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-mejor"><i class="fas fa-chart-line"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-dimension-name" id="repStatStrong">-</span>
+                        <span class="stat-label">Mejor Dimensión</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-debil"><i class="fas fa-exclamation-triangle"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-dimension-name" id="repStatWeak">-</span>
+                        <span class="stat-label">Por Fortalecer</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráficos -->
+            <div class="charts-container">
+                <div class="dimension-card">
+                <div class="dimension-header" style="background: #002b5e; border-bottom: none;">
+                    <h3 style="color: white;">Distribución de Niveles por Docente</h3>
+                </div>
+                    <div class="dimension-body chart-wrapper">
+                        <canvas id="chartFuncGrupo"></canvas>
+                    </div>
+                </div>
+                <div class="dimension-card">
+                <div class="dimension-header" style="background: #002b5e; border-bottom: none;">
+                    <h3 style="color: white;">Distribución de Niveles</h3>
+                </div>
+                    <div class="dimension-body chart-wrapper">
+                        <canvas id="chartNiveles"></canvas>
+                    </div>
+                </div>
+                <div class="dimension-card">
+                <div class="dimension-header" style="background: #002b5e; border-bottom: none;">
+                    <h3 style="color: white;">Cantidad de Acompañamientos por Mes</h3>
+                </div>
+                    <div class="dimension-body chart-wrapper">
+                        <canvas id="chartMensual"></canvas>
+                    </div>
+                </div>
+                <div class="dimension-card">
+                <div class="dimension-header" style="background: #002b5e; border-bottom: none;">
+                    <h3 style="color: white;">Promedio por Colegio</h3>
+                </div>
+                    <div class="dimension-body chart-wrapper">
+                        <canvas id="chartColegios"></canvas>
+                    </div>
+                </div>
+                <!-- Gráficos por Dimensión (Docentes) -->
+                <div id="dimensionChartsContainer" style="display: contents;">
+                    <div class="dimension-card">
+                        <div class="dimension-header" style="border-top: 4px solid #3b82f6;">
+                            <h3 id="titleDim1">Dimensión 1</h3>
+                        </div>
+                        <div class="dimension-body chart-wrapper">
+                            <canvas id="chartDocenteDim1"></canvas>
+                        </div>
+                    </div>
+                    <div class="dimension-card">
+                        <div class="dimension-header" style="border-top: 4px solid #ef4444;">
+                            <h3 id="titleDim2">Dimensión 2</h3>
+                        </div>
+                        <div class="dimension-body chart-wrapper">
+                            <canvas id="chartDocenteDim2"></canvas>
+                        </div>
+                    </div>
+                    <div class="dimension-card">
+                        <div class="dimension-header" style="border-top: 4px solid #f59e0b;">
+                            <h3 id="titleDim3">Dimensión 3</h3>
+                        </div>
+                        <div class="dimension-body chart-wrapper">
+                            <canvas id="chartDocenteDim3"></canvas>
+                        </div>
+                    </div>
+                    <div class="dimension-card">
+                        <div class="dimension-header" style="border-top: 4px solid #10b981;">
+                            <h3 id="titleDim4">Dimensión 4</h3>
+                        </div>
+                        <div class="dimension-body chart-wrapper">
+                            <canvas id="chartDocenteDim4"></canvas>
+                        </div>
+                    </div>
+                    <div class="dimension-card">
+                        <div class="dimension-header" style="border-top: 4px solid #8b5cf6;">
+                            <h3 id="titleDim5">Dimensión 5</h3>
+                        </div>
+                        <div class="dimension-body chart-wrapper">
+                            <canvas id="chartDocenteDim5"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="dimension-card full-width">
+                <div class="dimension-header" style="background: #002b5e; border-bottom: none;">
+                    <h3 style="color: white;">Comparativo de Dimensiones por Colegio</h3>
+                </div>
+                    <div class="dimension-body chart-wrapper large-chart">
+                        <canvas id="chartComparativo"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="talent-map-section" style="margin-top: 30px;">
+                <div class="dimension-card" style="box-shadow: var(--shadow-lg);">
+                    <div class="dimension-header talent-map-header" onclick="toggleTalentMap('')">
+                        <div style="display: flex; align-items: center; gap: 20px;">
+                            <h3>
+                                <i class="fas fa-layer-group"></i> Mapa de Talentos (Puntaje)
+                            </h3>
+                            <div class="talent-view-selector" onclick="event.stopPropagation()">
+                                <select id="filterTalentView" class="form-select custom-select-dark" onchange="actualizarReportes()">
+                                    <option value="promedio">📊 Ver Promedios del Periodo</option>
+                                    <option value="ultimo">⏱️ Ver Última Evaluación</option>
+                                </select>
+                                <i class="fas fa-chevron-down select-icon"></i>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 20px;">
+                            <span class="badge-new">NUEVO</span>
+                            <i id="talentMapIcon" class="fas fa-chevron-down toggle-icon-arrow"></i>
+                        </div>
+                    </div>
+                    <div id="talentMapBody" class="dimension-body talent-map-body" style="display: none;">
+                        <div class="talent-grid">
+                            <div class="talent-box box-avanzado">
+                                <div class="box-header">
+                                    <div class="box-labels">
+                                        <span class="box-title">Docente Referente</span>
+                                        <span class="box-level">Avanzado</span>
+                                    </div>
+                                    <span class="box-icon">🏆</span>
+                                </div>
+                                <div class="talent-list-container">
+                                    <ul class="talent-list" id="listAvanzado"></ul>
+                                </div>
+                            </div>
+                            <!-- ... resto de cajas ... -->
+                            <div class="talent-box box-intermedio">
+                                <div class="box-header">
+                                    <div class="box-labels">
+                                        <span class="box-title">Buen desempeño</span>
+                                        <span class="box-level">Intermedio</span>
+                                    </div>
+                                    <span class="box-icon">⭐</span>
+                                </div>
+                                <div class="talent-list-container">
+                                    <ul class="talent-list" id="listIntermedio"></ul>
+                                </div>
+                            </div>
+                            <div class="talent-box box-desarrollo">
+                                <div class="box-header">
+                                    <div class="box-labels">
+                                        <span class="box-title">Docente en Desarrollo</span>
+                                        <span class="box-level">En Desarrollo</span>
+                                    </div>
+                                    <span class="box-icon">🌱</span>
+                                </div>
+                                <div class="talent-list-container">
+                                    <ul class="talent-list" id="listDesarrollo"></ul>
+                                </div>
+                            </div>
+                            <div class="talent-box box-inicial">
+                                <div class="box-header">
+                                    <div class="box-labels">
+                                        <span class="box-title">Requiere Acompañamiento</span>
+                                        <span class="box-level">Inicial</span>
+                                    </div>
+                                    <span class="box-icon">🚩</span>
+                                </div>
+                                <div class="talent-list-container">
+                                    <ul class="talent-list" id="listInicial"></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+            <!-- =================== FIN VISTA LIDERAZGO =================== -->
+
+            <!-- ===================== VISTA VISITAS AL AULA ===================== -->
+            <div id="reportesVisitaView" style="display: none;">
+                <!-- KPIs Visitas -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon icon-evaluaciones"><i class="fas fa-school"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="vrepStatTotal">0</span>
+                            <span class="stat-label">Visitas Realizadas</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon icon-promedio"><i class="fas fa-star"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="vrepStatPromedio">0.00</span>
+                            <span class="stat-label">Promedio Global</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon icon-mejor"><i class="fas fa-clipboard-list"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-dimension-name" id="vrepStatPauta">-</span>
+                            <span class="stat-label">Pauta más usada</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon icon-debil"><i class="fas fa-chalkboard-teacher"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="vrepStatDocentes">0</span>
+                            <span class="stat-label">Docentes Visitados</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráficos Visitas -->
+                <div class="charts-container">
+                    <div class="dimension-card">
+                        <div class="dimension-header" style="background: #002b5e; border-bottom: none;">
+                            <h3 style="color: white;">Visitas por Tipo de Pauta</h3>
+                        </div>
+                        <div class="dimension-body chart-wrapper">
+                            <canvas id="vchartTipoPauta"></canvas>
+                        </div>
+                    </div>
+                    <div class="dimension-card">
+                        <div class="dimension-header" style="background: #002b5e; border-bottom: none;">
+                            <h3 style="color: white;">Cantidad de Visitas por Mes</h3>
+                        </div>
+                        <div class="dimension-body chart-wrapper">
+                            <canvas id="vchartMensual"></canvas>
+                        </div>
+                    </div>
+                    <div class="dimension-card">
+                        <div class="dimension-header" style="background: #002b5e; border-bottom: none;">
+                            <h3 style="color: white;">Promedio por Colegio</h3>
+                        </div>
+                        <div class="dimension-body chart-wrapper">
+                            <canvas id="vchartColegios"></canvas>
+                        </div>
+                    </div>
+                    <div class="dimension-card full-width">
+                        <div class="dimension-header" style="background: #002b5e; border-bottom: none;">
+                            <h3 style="color: white;">Promedio por Docente</h3>
+                        </div>
+                        <div class="dimension-body chart-wrapper large-chart">
+                            <canvas id="vchartDocentes"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== Visitas por Rol (tablas + semestres + anual) ===== -->
+                <div id="vrepRolSection" style="margin-top: 30px;"></div>
+            </div>
+            <!-- =================== FIN VISTA VISITAS AL AULA =================== -->
+        </div>

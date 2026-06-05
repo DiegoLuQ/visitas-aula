@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resumen Semanal - Liderazgo Docente</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8fafc;
+            padding: 20px;
+        }
+        .resumen-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .header h1 {
+            color: #1e1b4b;
+            margin: 0;
+            font-size: 28px;
+        }
+        .header p {
+            color: #64748b;
+            margin: 10px 0 0 0;
+        }
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .kpi-card {
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid transparent;
+        }
+        .kpi-cerrados { background: #ecfdf5; border-color: #d1fae5; color: #065f46; }
+        .kpi-borradores { background: #fff7ed; border-color: #ffedd5; color: #9a3412; }
+        .kpi-listos { background: #eff6ff; border-color: #dbeafe; color: #1e40af; }
+        
+        .kpi-label { font-size: 12px; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; }
+        .kpi-value { font-size: 32px; font-weight: 800; }
+
+        .chart-container {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .chart-container img {
+            max-width: 250px;
+            height: auto;
+        }
+
+        .table-section h2 {
+            font-size: 18px;
+            color: #1e293b;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .custom-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .custom-table th {
+            text-align: left;
+            padding: 12px;
+            font-size: 12px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            border-bottom: 2px solid #f1f5f9;
+        }
+        .custom-table td {
+            padding: 15px 12px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 14px;
+        }
+        .btn-link {
+            color: #6366f1;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .footer-actions {
+            margin-top: 40px;
+            text-align: center;
+        }
+        .btn-back {
+            background-color: #1e293b;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="resumen-container">
+        <div class="header">
+            <div style="background: #1e1b4b; width: 60px; height: 60px; border-radius: 12px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px;">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h1>Resumen Semanal de Gestión</h1>
+            <p>Estado actual de los acompañamientos por colegio</p>
+        </div>
+
+        <!-- Contenedor para bloques de colegios -->
+        <div id="schoolsContainer">
+            <!-- Se llenará dinámicamente -->
+            <div style="text-align: center; padding: 40px; color: #64748b;">
+                <i class="fas fa-spinner fa-spin"></i> Cargando estadísticas...
+            </div>
+        </div>
+
+        <div class="chart-container" style="background: #f1f5f9; padding: 20px; border-radius: 12px; margin-top: 20px;">
+            <h3 style="margin: 0 0 15px 0; font-size: 14px; text-transform: uppercase; color: #475569;">Distribución Global (Red)</h3>
+            <div id="chartLoading">Generando gráfico...</div>
+            <img id="chartImg" src="" alt="Gráfico de distribución" style="display: none; margin: 0 auto;">
+        </div>
+
+        <div class="table-section" style="margin-top: 40px;">
+            <h2><i class="fas fa-edit"></i> Últimos Borradores Pendientes (Global)</h2>
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>Docente</th>
+                        <th>Curso</th>
+                        <th>Fecha</th>
+                        <th style="text-align: right;">Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr><td colspan="4" style="text-align: center; padding: 20px;">Cargando datos...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="footer-actions">
+            <button onclick="window.location.href='dashboard.html'" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Volver al Dashboard
+            </button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { api } from './js/api.js';
+
+        async function init() {
+            try {
+                const response = await api.config.getWeeklyStats();
+                const { data, latest_drafts } = response;
+                
+                // 1. Llenar Bloques de Colegios
+                const container = document.getElementById('schoolsContainer');
+                container.innerHTML = '';
+
+                Object.entries(data.SCHOOLS).forEach(([name, s]) => {
+                    const isMacaya = name.toUpperCase().includes('MACAYA');
+                    const colorClass = isMacaya ? 'style="color: #065f46; border-left: 4px solid #059669;"' : 'style="color: #1e40af; border-left: 4px solid #2563eb;"';
+                    
+                    const schoolHtml = `
+                        <div class="school-block" style="margin-bottom: 30px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                            <div style="padding: 15px 20px; background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+                                <h3 ${colorClass} style="margin: 0; padding-left: 10px; font-size: 16px; font-weight: 700;">${name}</h3>
+                            </div>
+                            <div class="kpi-grid" style="padding: 20px; margin-bottom: 0;">
+                                <div class="kpi-card kpi-cerrados">
+                                    <div class="kpi-label">Cerrados</div>
+                                    <div class="kpi-value">${s.CERRADA}</div>
+                                </div>
+                                <div class="kpi-card kpi-borradores">
+                                    <div class="kpi-label">Borradores</div>
+                                    <div class="kpi-value">${s.BORRADOR}</div>
+                                </div>
+                                <div class="kpi-card" style="background: #f1f5f9; color: #475569; border-color: #e2e8f0;">
+                                    <div class="kpi-label">Total Colegio</div>
+                                    <div class="kpi-value">${s.TOTAL}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', schoolHtml);
+                });
+
+                // 2. Gráfico Global
+                const global = data.GLOBAL;
+                const chartConfig = {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Cerrados', 'Borradores', 'Por Firmar'],
+                        datasets: [{
+                            data: [global.CERRADA, global.BORRADOR, global.LISTO_PARA_FIRMA],
+                            backgroundColor: ['#10b981', '#f59e0b', '#3b82f6']
+                        }]
+                    },
+                    options: {
+                        plugins: {
+                            legend: { display: false },
+                            doughnutlabel: {
+                                labels: [
+                                    { text: String(global.TOTAL), font: { size: 20, weight: 'bold' } },
+                                    { text: 'Total Red' }
+                                ]
+                            }
+                        }
+                    }
+                };
+                
+                const chartImg = document.getElementById('chartImg');
+                chartImg.src = `https://quickchart.io/chart?c=${encodeURIComponent(JSON.stringify(chartConfig))}`;
+                chartImg.onload = () => {
+                    document.getElementById('chartLoading').style.display = 'none';
+                    chartImg.style.display = 'block';
+                };
+
+                // 3. Llenar Tabla (Global)
+                const tbody = document.getElementById('tableBody');
+                if (latest_drafts.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 20px; color: #94a3b8;">No hay borradores pendientes.</td></tr>';
+                } else {
+                    tbody.innerHTML = latest_drafts.map(d => `
+                        <tr>
+                            <td style="font-weight: 600; color: #1e293b;">${d.docente}</td>
+                            <td style="color: #64748b;">${d.curso}</td>
+                            <td style="color: #64748b;">${d.fecha}</td>
+                            <td style="text-align: right;">
+                                <a href="ver-acta.html?id=${d.id}" class="btn-link" target="_blank">Ver &rarr;</a>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+
+            } catch (error) {
+                console.error('Error al cargar datos:', error);
+                document.getElementById('schoolsContainer').innerHTML = `
+                    <div style="color: #ef4444; padding: 20px; text-align: center;">
+                        <i class="fas fa-exclamation-circle"></i> Error al cargar estadísticas: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

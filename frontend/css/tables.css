@@ -1,0 +1,272 @@
+/* tables.css - Diseño Premium para Tablas de Datos */
+
+.table-container {
+    background: var(--white);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    margin-top: 20px;
+    border: 1px solid var(--border);
+}
+
+.data-table, .table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+    color: var(--text);
+}
+
+.data-table thead, .table thead {
+    background-color: #f8fafc;
+    border-bottom: 2px solid var(--border);
+}
+
+.data-table th, .table th {
+    padding: 16px 20px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-light);
+}
+
+.data-table tbody tr, .table tbody tr {
+    transition: all 0.2s ease;
+    border-bottom: 1px solid var(--border);
+}
+
+.data-table tbody tr:last-child, .table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.data-table tbody tr:hover, .table tbody tr:hover {
+    background-color: #f1f5f9;
+}
+
+.data-table td, .table td {
+    padding: 16px 20px;
+    vertical-align: middle;
+}
+
+/* Acciones en tabla */
+.data-table td .actions, .table td .actions, .table td:last-child {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+/* Botones dentro de tablas */
+.data-table .btn-sm {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    border-radius: 8px;
+}
+
+/* Badge de Promedio */
+.avg-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.avg-badge.score-excellent { background: #dcfce7; color: #15803d; }
+.avg-badge.score-high { background: #e0f2fe; color: #0369a1; }
+.avg-badge.score-mid { background: #fef3c7; color: #92400e; }
+.avg-badge.score-low { background: #fee2e2; color: #b91c1c; }
+.avg-badge.badge-secondary { background: #f1f5f9; color: #64748b; }
+
+.avg-success { background: #dcfce7; color: #166534; }
+.avg-warning { background: #fef9c3; color: #854d0e; }
+.avg-danger { background: #fee2e2; color: #991b1b; }
+
+/* Badge de Nivel de Liderazgo */
+.nivel-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-align: center;
+    border: 1px solid transparent;
+}
+.nivel-badge.score-excellent { background: #dcfce7; color: #15803d; border-color: #bbf7d0; }
+.nivel-badge.score-high { background: #e0f2fe; color: #0369a1; border-color: #bae6fd; }
+.nivel-badge.score-mid { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+.nivel-badge.score-low { background: #fee2e2; color: #b91c1c; border-color: #fecaca; }
+.nivel-badge.badge-secondary { background: #f1f5f9; color: #64748b; border-color: #e2e8f0; }
+
+/* Grid de dos tablas (Dashboard de Visitas): 2 columnas → 1 en pantallas chicas */
+.visitas-dual-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 900px) {
+    .visitas-dual-grid { grid-template-columns: 1fr; }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    /* Tablas normales: scroll horizontal (las que NO se convierten en tarjetas) */
+    .data-table:not(.cards-sm) {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+    /* El contenedor recorta con overflow:hidden; permitir scroll horizontal de tablas anchas */
+    .table-container {
+        overflow-x: auto;
+    }
+
+    /* ===== Patrón "tabla → tarjetas" en móvil (clase .cards-sm) ===== */
+    table.cards-sm,
+    table.cards-sm tbody { display: block; width: 100%; }
+    table.cards-sm thead { display: none; }
+
+    table.cards-sm tr {
+        display: block;
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 4px 6px;
+        margin-bottom: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+    table.cards-sm tr:hover { background: var(--white); }
+
+    table.cards-sm td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 10px !important;
+        border: none !important;
+        white-space: normal;
+        text-align: right;
+        font-size: 0.85rem;
+    }
+    /* Etiqueta de cada celda (desde data-label) */
+    table.cards-sm td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: var(--text-light);
+        text-align: left;
+        flex-shrink: 0;
+    }
+    table.cards-sm td:empty { display: none; }
+
+    /* Celda de acciones: ocupa toda la fila, botones a la derecha */
+    table.cards-sm td.actions-cell {
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        border-top: 1px dashed var(--border) !important;
+        margin-top: 2px;
+        padding-top: 10px !important;
+    }
+    table.cards-sm td.actions-cell::before { display: none; }
+
+    /* ===== KPIs del Dashboard: 2 por fila en móvil ===== */
+    .stats-grid { grid-template-columns: 1fr 1fr !important; gap: 12px !important; }
+    .stat-card { padding: 14px !important; gap: 10px !important; }
+    .stat-icon { width: 40px !important; height: 40px !important; font-size: 1.3rem !important; }
+    .stat-value { font-size: 1.4rem !important; }
+
+    /* ===== Barra de filtros (Historial): inputs apilados a todo el ancho ===== */
+    .filters-bar { flex-direction: column; align-items: stretch !important; }
+    .filters-bar .form-select,
+    .filters-bar .btn,
+    .filters-bar input,
+    .filters-bar select { width: 100% !important; min-width: 0 !important; }
+}
+
+/* ===========================================================
+   Historial de Visitas: tarjetas a medida (móvil) vs tabla (escritorio)
+   =========================================================== */
+.historial-cards { display: none; }
+
+@media (max-width: 768px) {
+    .historial-desktop { display: none; }       /* ocultar tabla en móvil */
+    .historial-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 4px;
+    }
+
+    .vh-card {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 14px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+    .vh-card-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+    .vh-docente {
+        font-weight: 800;
+        color: #1e293b;
+        font-size: 0.98rem;
+        line-height: 1.25;
+        overflow-wrap: anywhere;
+    }
+    .vh-id {
+        font-family: monospace;
+        color: #6366f1;
+        font-weight: 700;
+        font-size: 0.72rem;
+        margin-top: 2px;
+    }
+    .vh-rows {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        border-top: 1px solid var(--border);
+        padding-top: 10px;
+    }
+    .vh-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+        font-size: 0.82rem;
+        color: #334155;
+    }
+    .vh-row .vh-k {
+        color: var(--text-light);
+        font-weight: 600;
+        flex-shrink: 0;
+    }
+    .vh-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px dashed var(--border);
+    }
+    .vh-actions .btn {
+        flex: 1;
+        min-width: 80px;
+        justify-content: center;
+    }
+    .vh-empty {
+        text-align: center;
+        color: #94a3b8;
+        padding: 40px 20px;
+        background: var(--white);
+        border: 1px dashed var(--border);
+        border-radius: 14px;
+    }
+}

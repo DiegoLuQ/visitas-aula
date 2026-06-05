@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sistema de Liderazgo</title>
+    <link rel="stylesheet" href="auth.css">
+</head>
+
+<body class="auth-body">
+    <div class="auth-container">
+        <div class="auth-box">
+            <h1>Sistema de Acompañamiento</h1>
+            <h2>Liderazgo Docente | Visita a Aula</h2>
+
+            <div id="loginSection">
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="username">Usuario</label>
+                        <input type="text" id="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Contraseña</label>
+                        <input type="password" id="password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Ingresar</button>
+                </form>
+                <p style="text-align: center; margin-top: 20px; font-size: 12px; font-style: italic;"><b>Sistema creado
+                        por
+                        Tics e Innovación</b></p>
+            </div>
+
+            <p id="authMessage" class="message"></p>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,87 @@
+<!-- Página Metas -->
+<div id="pageMetas" class="page">
+    <div class="page-header">
+        <h1>Metas de Visitas</h1>
+        <div class="header-actions">
+            <button class="btn btn-info" onclick="window.app.exportarMetasExcel()" title="Exportar a Excel">📄 Exportar</button>
+            <button class="btn btn-warning" onclick="window.app.descargarMetasPlantilla()" title="Descargar plantilla de carga masiva">📥 Plantilla</button>
+            <button class="btn btn-success" onclick="document.getElementById('importMetasFile').click()" title="Importar desde Excel">📤 Importar</button>
+            <input type="file" id="importMetasFile" style="display: none;" accept=".xlsx, .xls" onchange="window.app.importarMetasExcel(this)">
+            <button class="btn btn-primary" onclick="window.app.editMeta()">Agregar Meta</button>
+        </div>
+    </div>
+
+    <p class="subtitle" style="color:#64748b; margin-bottom:16px;">
+        Define la cantidad de visitas esperada por <strong>cada visitador</strong> (usuario), por semestre o por año. Cada usuario tiene su meta individual.
+    </p>
+
+    <!-- Filtros -->
+    <div class="filters-bar">
+        <div class="filter-group">
+            <label>Año:</label>
+            <select id="metaFilterAnio" class="form-select" onchange="window.app.loadMetas()"></select>
+        </div>
+        <div class="filter-group">
+            <label>Colegio:</label>
+            <select id="metaFilterColegio" class="form-select" onchange="window.app.loadMetas()">
+                <option value="">Todos</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Visitador</th>
+                    <th>Rol</th>
+                    <th>Colegio</th>
+                    <th>Año</th>
+                    <th>Periodo</th>
+                    <th>Cantidad de Visitas</th>
+                </tr>
+            </thead>
+            <tbody id="metasBody">
+                <tr><td colspan="6" class="text-center">Cargando...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Meta -->
+<div id="modalMeta" class="modal-overlay">
+    <div class="modal" style="max-width: 520px;">
+        <form id="formMeta">
+            <div class="modal-header">
+                <h3 id="modalMetaTitle">Agregar Meta</h3>
+                <button type="button" class="modal-close" onclick="window.app.closeMetaModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="metaId">
+                <div class="form-group">
+                    <label>Visitador (usuario) *</label>
+                    <select id="metaUsuario" class="form-select" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Año *</label>
+                    <select id="metaAnio" class="form-select" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Periodo *</label>
+                    <select id="metaPeriodo" class="form-select" required>
+                        <option value="ANUAL">Anual (meta para todo el año)</option>
+                        <option value="SEMESTRE">Semestral (meta por cada semestre)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Cantidad de Visitas *</label>
+                    <input type="number" id="metaCantidad" class="form-control" min="0" step="1" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                    <button type="button" class="btn btn-secondary" onclick="window.app.closeMetaModal()">Cancelar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

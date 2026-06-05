@@ -1,0 +1,20 @@
+# Entorno virtual
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Archivos de debug y migración manual
+debug_*.py
+debug_*.json
+migrate_*.py
+check_db.py
+verify_model.py
+run_migration.py
+
+# Variables locales (se inyectan via docker-compose)
+.env
+
+# Otros
+*.md
+.git/
