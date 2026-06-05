@@ -1,10 +1,10 @@
 version: '3.8'
 services:
-  backend:
+  visit_back:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: mcdp_backend
+    container_name: visit_back
     # Ya no necesitas mapear el puerto del backend al host (ej. 8000:8000)
     # porque el frontend o el proxy se comunican internamente.
     networks:
@@ -16,11 +16,11 @@ services:
       - SECRET_KEY=${SECRET_KEY}
     restart: always
 
-  frontend:
+  visit_front:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: mcdp_frontend
+    container_name: visit_front
     # Eliminamos los puertos mapeados al host (80:80)
     # Agregamos las variables para el Proxy y SSL
     environment:
@@ -30,7 +30,7 @@ services:
       - red_produccion
     restart: always
     depends_on:
-      - backend
+      - visit_back
 
 networks:
   red_produccion:
