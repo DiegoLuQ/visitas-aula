@@ -30,7 +30,7 @@ services:
       - red_produccion
     restart: always
     depends_on:
-      - mcdp_backend
+      - backend
 
 networks:
   red_produccion:
