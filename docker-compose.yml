@@ -1,6 +1,6 @@
 version: '3.8'
 services:
-  mcdp_backend:
+  backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -16,7 +16,7 @@ services:
       - SECRET_KEY=${SECRET_KEY}
     restart: always
 
-  mcdp_frontend:
+  frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
