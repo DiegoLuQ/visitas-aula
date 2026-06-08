@@ -293,7 +293,8 @@ def listar_evaluaciones(
     # Join con Docente para poder filtrar por colegio
     query = query.join(Docente)
 
-    if current_user.rol_id == 3:
+    is_liderazgo = current_user.rol and (current_user.rol.nombre or "").lower() == "liderazgo"
+    if current_user.rol_id in (3, 8) or is_liderazgo:
         query = query.filter(Evaluacion.usuario_id == current_user.id)
 
     # Filtro por colegio_id del usuario (Seguridad)
@@ -428,7 +429,7 @@ def dashboard_stats(
     colegio_id: Optional[int] = Query(None),
     plantilla_id: Optional[int] = Query(None),
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(require_admin_or_auditor)
+    current_user: Usuario = Depends(get_current_active_user)
 ):
     # Join inicial con Docente para permitir todos los filtros de colegio
     query = db.query(Evaluacion).join(Docente)
@@ -439,8 +440,9 @@ def dashboard_stats(
     if plantilla_id:
         query = query.filter(Evaluacion.plantilla_id == plantilla_id)
 
-    # Filtro MANDATORIO por colegio_id del usuario (Seguridad)
-    if current_user.colegio_id:
+    # Filtro MANDATORIO por colegio_id del usuario (Seguridad) - exceptuando liderazgo
+    is_liderazgo = current_user.rol and (current_user.rol.nombre or "").lower() == "liderazgo"
+    if current_user.colegio_id and not is_liderazgo:
         try:
             ids = [int(id.strip()) for id in current_user.colegio_id.split(",") if id.strip()]
             if ids:
@@ -449,6 +451,8 @@ def dashboard_stats(
             pass
 
     if current_user.rol_id == 2:
+        query = query.filter(Evaluacion.usuario_id == current_user.id)
+    elif current_user.rol_id in (3, 8) or is_liderazgo:
         query = query.filter(Evaluacion.usuario_id == current_user.id)
 
     total = query.count()
@@ -467,7 +471,7 @@ def dashboard_stats(
         # Nota: El conteo de docentes evaluados también debería filtrarse por la plantilla si queremos ser específicos
         doc_query = doc_query.filter(Evaluacion.plantilla_id == plantilla_id)
 
-    if current_user.colegio_id:
+    if current_user.colegio_id and not is_liderazgo:
         try:
             ids = [int(id.strip()) for id in current_user.colegio_id.split(",") if id.strip()]
             if ids:
@@ -477,6 +481,9 @@ def dashboard_stats(
             pass
 
     if current_user.rol_id == 2:
+        prom_query = prom_query.filter(Evaluacion.usuario_id == current_user.id)
+        doc_query = doc_query.filter(Evaluacion.usuario_id == current_user.id)
+    elif current_user.rol_id in (3, 8) or is_liderazgo:
         prom_query = prom_query.filter(Evaluacion.usuario_id == current_user.id)
         doc_query = doc_query.filter(Evaluacion.usuario_id == current_user.id)
 

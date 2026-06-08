@@ -17,7 +17,8 @@ def list_colegios(
 ):
     query = db.query(Colegio)
     
-    if current_user.colegio_id:
+    is_liderazgo = current_user.rol and (current_user.rol.nombre or "").lower() == "liderazgo"
+    if current_user.colegio_id and not is_liderazgo:
         try:
             ids = [int(id.strip()) for id in current_user.colegio_id.split(",") if id.strip()]
             if ids:
@@ -36,7 +37,8 @@ def get_colegio(
 ):
     query = db.query(Colegio).filter(Colegio.id == colegio_id)
     
-    if current_user.colegio_id:
+    is_liderazgo = current_user.rol and (current_user.rol.nombre or "").lower() == "liderazgo"
+    if current_user.colegio_id and not is_liderazgo:
         try:
             ids = [int(id.strip()) for id in current_user.colegio_id.split(",") if id.strip()]
             if ids and colegio_id not in ids:

@@ -51,7 +51,7 @@ def update_asignatura(
     asignatura_id: int,
     asignatura_update: AsignaturaCreate,
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(require_admin)
+    current_user: Usuario = Depends(require_not_usuario)
 ):
     asignatura = db.query(Asignatura).filter(Asignatura.id == asignatura_id).first()
     if not asignatura:

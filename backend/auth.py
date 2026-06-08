@@ -97,14 +97,14 @@ def require_admin_or_director(current_user: Usuario = Depends(get_current_active
 
 
 def require_docente_manager(current_user: Usuario = Depends(get_current_active_user)) -> Usuario:
-    """Roles autorizados a gestionar docentes: admin, director, utp."""
+    """Roles autorizados a gestionar docentes: admin, director, utp, liderazgo."""
     if current_user.rol_id == 1:
         return current_user
-    if current_user.rol and (current_user.rol.nombre or "").lower() in ("director", "utp"):
+    if current_user.rol and (current_user.rol.nombre or "").lower() in ("director", "utp", "liderazgo"):
         return current_user
     raise HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,
-        detail="Solo administradores, directores o UTP pueden gestionar docentes"
+        detail="Solo administradores, directores, UTP o coordinadores de liderazgo pueden gestionar docentes"
     )
 
 
