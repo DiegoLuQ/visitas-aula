@@ -359,7 +359,7 @@ export async function initVisitaForm(docenteId = null, templateId = 2, evaluacio
             existingData.respuestas.forEach(r => {
                 const radio = document.querySelector(`input[name="ind_${r.subdimension_id}"][value="${r.valor}"]`);
                 if (radio) radio.checked = true;
-                const estInput = document.querySelector(`input[name="est_${r.subdimension_id}"]`);
+                const estInput = document.querySelector(`[name="est_${r.subdimension_id}"]`);
                 if (estInput) estInput.value = r.estrategia || '';
             });
 
@@ -430,9 +430,11 @@ function renderVisitaForm(container, colegios, cursos, asignaturas, plantilla, d
     const estadoVisita = existingData?.estado || 'BORRADOR';
     const generalEditable = isCreator && isNew;
     const retroEditable = isCreator && (isNew || ['BORRADOR', 'LISTO_PARA_FIRMA'].includes(estadoVisita));
+    const obsEditable = isCreator && (isNew || (esFormatoOrientacion(plantilla) && ['BORRADOR', 'LISTO_PARA_FIRMA'].includes(estadoVisita)));
     const canSave = retroEditable;
-    const disabledAttr = generalEditable ? '' : 'disabled';   // datos generales / rúbrica / observaciones
+    const disabledAttr = generalEditable ? '' : 'disabled';   // datos generales / rúbrica
     const disabledRetro = retroEditable ? '' : 'disabled';    // solo retroalimentación
+    const disabledObs = obsEditable ? '' : 'disabled';        // observaciones
     const currentColegioId = existingData?.colegio_id || existingData?.docente?.colegio_id;
 
     const html = `
@@ -520,7 +522,7 @@ function renderVisitaForm(container, colegios, cursos, asignaturas, plantilla, d
                                         ${esFormatoOrientacion(plantilla) ? `
                                         <div class="mt-4 border-t border-slate-100 pt-4">
                                             <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2">Estrategia a mejorar</label>
-                                            <input type="text" name="est_${sub.id}" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none" placeholder="Escriba la estrategia acordada para este indicador..." ${disabledAttr}>
+                                            <textarea name="est_${sub.id}" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none min-h-[60px]" placeholder="Escriba la estrategia acordada para este indicador..." ${disabledAttr}></textarea>
                                         </div>
                                         ` : ''}
                                     </div>
@@ -569,7 +571,7 @@ function renderVisitaForm(container, colegios, cursos, asignaturas, plantilla, d
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div class="form-group">
                             <label class="block text-xs font-bold text-slate-500 uppercase mb-3">Observaciones (Opcional)</label>
-                            <textarea id="visitaObservaciones" class="w-full bg-slate-50 border-none rounded-3xl p-5 text-sm focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none min-h-[120px]" placeholder="Escriba las observaciones clave..." ${disabledAttr}></textarea>
+                            <textarea id="visitaObservaciones" class="w-full bg-slate-50 border-none rounded-3xl p-5 text-sm focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none min-h-[120px]" placeholder="Escriba las observaciones clave..." ${disabledObs}></textarea>
                         </div>
                         <div class="form-group">
                             <label class="block text-xs font-bold text-slate-500 uppercase mb-3">Retroalimentación (Opcional)</label>
@@ -638,7 +640,7 @@ export async function guardarVisita(plantillaId, evaluacionId = null) {
         });
 
         const respuestas = Object.entries(respuestasMap).map(([id, val]) => {
-            const estInput = document.querySelector(`input[name="est_${id}"]`);
+            const estInput = document.querySelector(`[name="est_${id}"]`);
             return {
                 subdimension_id: parseInt(id),
                 valor: val,

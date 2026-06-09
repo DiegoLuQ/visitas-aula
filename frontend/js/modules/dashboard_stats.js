@@ -14,7 +14,8 @@ export async function loadDashboardStats() {
 
         // 2. Cargar evaluaciones para extraer los borradores
         const todas = await api.evaluaciones.getAll(colegioId);
-        const borradores = todas.filter(ev => ev.estado === 'BORRADOR');
+        const LIDERAZGO_PLANTILLA_ID = 1;
+        const borradores = todas.filter(ev => ev.estado === 'BORRADOR' && (ev.plantilla_id ?? LIDERAZGO_PLANTILLA_ID) === LIDERAZGO_PLANTILLA_ID);
         
         renderBorradoresDashboard(borradores);
         

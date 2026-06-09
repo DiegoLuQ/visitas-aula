@@ -30,7 +30,7 @@ const ROLE_CONFIG = {
         platforms: ['liderazgo'],
         pages: [
             'inicio', 'evaluaciones', 'nueva-evaluacion',
-            'docentes', 'cursos', 'asignaturas', 'usuarios'
+            'colegios', 'docentes', 'asignaturas', 'reportes'
         ]
     },
     orien_conv: {

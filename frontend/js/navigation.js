@@ -44,10 +44,10 @@ export async function loadUserInfo() {
         // Aplicar visibilidad del sidebar
         applyNavPermissions(cfg, context);
 
-        // Botón de cambio de plataforma: solo si el rol tiene más de una
+        // Botón de cambio de plataforma: solo si el rol es administrador (rolId === 1)
         const btnSwitch = document.getElementById('btnSwitchPlatform');
         if (btnSwitch) {
-            btnSwitch.style.display = (cfg.platforms.length > 1) ? 'flex' : 'none';
+            btnSwitch.style.display = (rolId === 1) ? 'flex' : 'none';
         }
     } catch (error) {
         console.error('Error cargando usuario:', error);
