@@ -140,7 +140,7 @@ export async function initUtpPauta(evaluacionId = null, templateId = null) {
                     const obsGen = document.getElementById('utpObservacionesGenerales');
                     if (obsGen) obsGen.value = com.observaciones_generales || '';
 
-                    // Paso 5: Retroalimentación
+                    // Paso 6: Retroalimentación
                     if (com.retroalimentacion) {
                         const r = com.retroalimentacion;
                         if (document.getElementById('utpFechaEntrevista')) document.getElementById('utpFechaEntrevista').value = r.fecha_entrevista || '';
@@ -150,7 +150,7 @@ export async function initUtpPauta(evaluacionId = null, templateId = null) {
                         if (document.getElementById('utpSintesisAcuerdos')) document.getElementById('utpSintesisAcuerdos').value = r.sintesis_acuerdos || '';
                     }
 
-                    // Paso 6: Plan Estratégico
+                    // Paso 5: Plan Estratégico
                     utpData.plan_estrategico = com.plan_estrategico || [{ cambio: '', acciones: '', tiempo: '', recursos: '' }];
                     if (utpData.plan_estrategico.length === 0) {
                         utpData.plan_estrategico = [{ cambio: '', acciones: '', tiempo: '', recursos: '' }];
@@ -606,7 +606,7 @@ function updateWizardUI() {
             }
         }
 
-        if (currentStep === 6) {
+        if (currentStep === 5) {
             renderUtpPlanTable();
         }
     }
@@ -865,11 +865,28 @@ function renderUtpWizardUI(container, plantilla, evaluacionId, visitaPlantillas)
                     </div>
                 </div>
 
-                <!-- Paso 5: Retroalimentación Descriptiva -->
+                <!-- Paso 5: Plan Estratégico de Cambios -->
                 <div id="utpStep5" class="utp-step hidden space-y-8">
+                    <div class="bg-indigo-900 p-5 sm:p-8 rounded-[28px] sm:rounded-[40px] shadow-2xl shadow-indigo-900/20">
+                        <div class="flex items-center justify-between mb-8">
+                            <h4 class="text-2xl font-black text-white flex items-center gap-3">
+                                <span class="bg-white/20 p-2 rounded-xl"><i class="fas fa-rocket"></i></span>
+                                Plan Estratégico de Cambios
+                            </h4>
+                            <button type="button" id="btnUtpAddPlan" onclick="app.addUtpPlanRow()" class="bg-indigo-500 text-white px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg hover:bg-indigo-400 hover:scale-105 active:scale-95 transition-all">
+                                + Agregar Cambio
+                            </button>
+                        </div>
+
+                        <div id="utpPlanTableBody" class="space-y-5"></div>
+                    </div>
+                </div>
+
+                <!-- Paso 6: Retroalimentación Descriptiva -->
+                <div id="utpStep6" class="utp-step hidden space-y-8">
                     <div class="bg-indigo-50/30 p-5 sm:p-8 rounded-[28px] sm:rounded-[40px] border border-indigo-100">
                         <h4 class="text-2xl font-black text-indigo-900 mb-6">Retroalimentación Descriptiva</h4>
-                        
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                             <div class="form-group">
                                 <label class="block text-xs font-black text-slate-400 uppercase mb-2 ml-2">Fecha Entrevista</label>
@@ -895,23 +912,6 @@ function renderUtpWizardUI(container, plantilla, evaluacionId, visitaPlantillas)
                                 <textarea id="utpSintesisAcuerdos" class="w-full bg-white border-none rounded-2xl p-4 text-sm font-medium shadow-sm focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all min-h-[120px]" placeholder="Resumen final y compromisos..."></textarea>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Paso 6: Plan Estratégico de Cambios -->
-                <div id="utpStep6" class="utp-step hidden space-y-8">
-                    <div class="bg-indigo-900 p-5 sm:p-8 rounded-[28px] sm:rounded-[40px] shadow-2xl shadow-indigo-900/20">
-                        <div class="flex items-center justify-between mb-8">
-                            <h4 class="text-2xl font-black text-white flex items-center gap-3">
-                                <span class="bg-white/20 p-2 rounded-xl"><i class="fas fa-rocket"></i></span>
-                                Plan Estratégico de Cambios
-                            </h4>
-                            <button type="button" id="btnUtpAddPlan" onclick="app.addUtpPlanRow()" class="bg-indigo-500 text-white px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg hover:bg-indigo-400 hover:scale-105 active:scale-95 transition-all">
-                                + Agregar Cambio
-                            </button>
-                        </div>
-                        
-                        <div id="utpPlanTableBody" class="space-y-5"></div>
                     </div>
                 </div>
 

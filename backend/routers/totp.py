@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from database import get_db
 from models import Docente, Usuario
-from auth import get_current_active_user, require_admin_or_auditor
+from auth import get_current_active_user, require_docente_manager
 
 logger = logging.getLogger(__name__)
 
@@ -14,12 +14,20 @@ router = APIRouter(prefix="/totp", tags=["TOTP"])
 async def setup_totp(
     docente_id: int, 
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(require_admin_or_auditor)
+    current_user: Usuario = Depends(require_docente_manager)
 ):
     docente = db.query(Docente).filter(Docente.id == docente_id).first()
     if not docente:
         raise HTTPException(status_code=404, detail="Docente no encontrado")
     
+    # Control de acceso por colegio para no-admins
+    if current_user.rol_id != 1:
+        permitidos = []
+        if current_user.colegio_id:
+            permitidos = [int(x.strip()) for x in str(current_user.colegio_id).split(",") if x.strip().isdigit()]
+        if permitidos and docente.colegio_id not in permitidos:
+            raise HTTPException(status_code=403, detail="No puede gestionar la firma de un docente de otro colegio")
+            
     # Si ya tiene un secreto, opcionalmente podríamos resetearlo o informar
     # Por ahora, generamos uno nuevo cada vez que se pide el setup (antes de confirmar)
     temp_secret = pyotp.random_base32()
@@ -42,11 +50,19 @@ async def confirm_totp(
     docente_id: int, 
     data: dict,  # {"secret": "...", "code": "123456"}
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(require_admin_or_auditor)
+    current_user: Usuario = Depends(require_docente_manager)
 ):
     docente = db.query(Docente).filter(Docente.id == docente_id).first()
     if not docente:
         raise HTTPException(status_code=404, detail="Docente no encontrado")
+        
+    # Control de acceso por colegio para no-admins
+    if current_user.rol_id != 1:
+        permitidos = []
+        if current_user.colegio_id:
+            permitidos = [int(x.strip()) for x in str(current_user.colegio_id).split(",") if x.strip().isdigit()]
+        if permitidos and docente.colegio_id not in permitidos:
+            raise HTTPException(status_code=403, detail="No puede gestionar la firma de un docente de otro colegio")
     
     secret = data.get("secret")
     code = data.get("code")

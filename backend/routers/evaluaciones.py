@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, File, UploadFile
-from fastapi.responses import StreamingResponse
+from fastapi import APIRouter, Depends, HTTPException, Query, File, UploadFile, Form
+from fastapi.responses import StreamingResponse, FileResponse
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func, extract, or_
 import logging
@@ -8,14 +8,18 @@ from jose import jwt, JWTError
 import uuid
 from datetime import datetime, date
 from database import get_db
-from models import Evaluacion, EvaluacionRespuesta, EvaluacionEstudiante, EvaluacionApoyo, FortalezaAspecto, Docente, Usuario, Plantilla, Colegio, Curso, Asignatura, EvaluacionEstado, EmailRecipient, DeletedEvaluation, Rol, Meta
+from models import Evaluacion, EvaluacionRespuesta, EvaluacionEstudiante, EvaluacionApoyo, FortalezaAspecto, Docente, Usuario, Plantilla, Colegio, Curso, Asignatura, EvaluacionEstado, EmailRecipient, DeletedEvaluation, Rol, Meta, PdfVisita
 from schemas import EvaluacionCreate, EvaluacionResponse, EvaluacionListResponse, EvaluacionUpdate
 from auth import get_current_active_user, require_admin_or_auditor, SECRET_KEY, ALGORITHM
 from utils.websocket_manager import manager
 from utils.email import send_evaluation_email
+from utils.pdf_compress import comprimir_pdf
 import os
 
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8080")
+
+# Carpeta donde se almacenan los PDF de visitas históricas (dentro de backend/).
+PDF_VISITAS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "uploads", "pdf_visitas")
 
 router = APIRouter(prefix="/evaluaciones", tags=["Evaluaciones"])
 
@@ -277,6 +281,152 @@ def crear_evaluacion(
     return build_evaluacion_response(new_eval)
 
 
+@router.post("/upload-visita")
+async def subir_visita_pdf(
+    docente_id: int = Form(...),
+    plantilla_id: int = Form(...),
+    fecha_visita: str = Form(...),
+    fecha_retro: Optional[str] = Form(None),
+    archivo: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_active_user)
+):
+    """Registra una visita histórica a partir de un PDF.
+
+    Crea una Evaluacion mínima en estado CERRADA (docente, plantilla, usuario y
+    fechas) y guarda el PDF comprimido en el filesystem, enlazado vía PdfVisita.
+    Disponible para todos los roles excepto 'usuario' (rol 3) y 'liderazgo'.
+    """
+    # --- Permisos: bloquear rol usuario (3) y rol liderazgo ---
+    rol_name = (current_user.rol.nombre or "").lower() if current_user.rol else ""
+    if current_user.rol_id == 3 or rol_name == "liderazgo":
+        raise HTTPException(status_code=403, detail="No tienes permiso para subir visitas")
+
+    # --- Validar entidades ---
+    docente = db.query(Docente).filter(Docente.id == docente_id).first()
+    if not docente:
+        raise HTTPException(status_code=404, detail="Docente no encontrado")
+
+    plantilla = db.query(Plantilla).filter(Plantilla.id == plantilla_id).first()
+    if not plantilla:
+        raise HTTPException(status_code=404, detail="Pauta no encontrada")
+
+    # Seguridad por colegio: el no-admin solo puede subir visitas de su(s) colegio(s).
+    if current_user.colegio_id:
+        ids = [int(x.strip()) for x in str(current_user.colegio_id).split(",") if x.strip().isdigit()]
+        if ids and docente.colegio_id not in ids:
+            raise HTTPException(status_code=403, detail="El docente no pertenece a tu colegio")
+
+    # --- Validar fechas ---
+    try:
+        fecha_visita_d = datetime.strptime(fecha_visita, "%Y-%m-%d").date()
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Fecha de visita inválida (use AAAA-MM-DD)")
+
+    fecha_retro_d = None
+    if fecha_retro:
+        try:
+            fecha_retro_d = datetime.strptime(fecha_retro, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Fecha de retroalimentación inválida (use AAAA-MM-DD)")
+
+    # --- Validar archivo ---
+    if not (archivo.content_type == "application/pdf" or (archivo.filename or "").lower().endswith(".pdf")):
+        raise HTTPException(status_code=400, detail="El archivo debe ser un PDF")
+
+    contenido = await archivo.read()
+    if not contenido:
+        raise HTTPException(status_code=400, detail="El archivo está vacío")
+
+    MAX_MB = 25
+    if len(contenido) > MAX_MB * 1024 * 1024:
+        raise HTTPException(status_code=400, detail=f"El PDF supera el máximo de {MAX_MB} MB")
+
+    tamano_original = len(contenido)
+    comprimido = comprimir_pdf(contenido)
+
+    # --- Crear la evaluación (CERRADA) con datos mínimos ---
+    fecha_cierre = datetime.combine(fecha_retro_d or fecha_visita_d, datetime.min.time())
+    new_eval = Evaluacion(
+        plantilla_id=plantilla_id,
+        usuario_id=current_user.id,
+        docente_id=docente_id,
+        observador_id=current_user.id,
+        fecha=fecha_visita_d,
+        fecha_retro=fecha_retro_d,
+        estado=EvaluacionEstado.CERRADA,
+        fecha_firma_docente=fecha_cierre,
+        token_full=str(uuid.uuid4()),
+        token_pedagogico=str(uuid.uuid4()),
+    )
+    db.add(new_eval)
+    db.flush()  # obtener new_eval.id
+
+    # --- Guardar el PDF en disco ---
+    os.makedirs(PDF_VISITAS_DIR, exist_ok=True)
+    nombre_archivo = f"visita_{new_eval.id}_{uuid.uuid4().hex}.pdf"
+    ruta_absoluta = os.path.join(PDF_VISITAS_DIR, nombre_archivo)
+    try:
+        with open(ruta_absoluta, "wb") as f:
+            f.write(comprimido)
+    except OSError as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"No se pudo guardar el archivo: {e}")
+
+    pdf = PdfVisita(
+        evaluacion_id=new_eval.id,
+        ruta_archivo=os.path.join("pdf_visitas", nombre_archivo),  # relativa a uploads/
+        nombre_original=archivo.filename,
+        tamano_original=tamano_original,
+        tamano_comprimido=len(comprimido),
+    )
+    db.add(pdf)
+    db.commit()
+    db.refresh(new_eval)
+
+    return {
+        "id": new_eval.id,
+        "docente_id": docente_id,
+        "plantilla_id": plantilla_id,
+        "fecha_visita": fecha_visita_d.isoformat(),
+        "fecha_retro": fecha_retro_d.isoformat() if fecha_retro_d else None,
+        "estado": new_eval.estado.value,
+        "pdf": {
+            "nombre_original": pdf.nombre_original,
+            "tamano_original": tamano_original,
+            "tamano_comprimido": len(comprimido),
+        },
+    }
+
+
+@router.get("/{evaluacion_id}/pdf-visita")
+def descargar_visita_pdf(
+    evaluacion_id: int,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_active_user)
+):
+    """Descarga el PDF asociado a una visita histórica."""
+    pdf = db.query(PdfVisita).filter(PdfVisita.evaluacion_id == evaluacion_id).first()
+    if not pdf:
+        raise HTTPException(status_code=404, detail="Esta visita no tiene PDF asociado")
+
+    # Seguridad por colegio (no-admin): solo PDFs de su(s) colegio(s).
+    if current_user.colegio_id:
+        ids = [int(x.strip()) for x in str(current_user.colegio_id).split(",") if x.strip().isdigit()]
+        evaluacion = db.query(Evaluacion).options(joinedload(Evaluacion.docente)).filter(Evaluacion.id == evaluacion_id).first()
+        col_id = evaluacion.docente.colegio_id if evaluacion and evaluacion.docente else None
+        if ids and col_id not in ids:
+            raise HTTPException(status_code=403, detail="Sin acceso a este archivo")
+
+    base_uploads = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "uploads")
+    ruta_absoluta = os.path.join(base_uploads, pdf.ruta_archivo)
+    if not os.path.exists(ruta_absoluta):
+        raise HTTPException(status_code=404, detail="El archivo no se encuentra en el servidor")
+
+    descarga = pdf.nombre_original or f"visita_{evaluacion_id}.pdf"
+    return FileResponse(ruta_absoluta, media_type="application/pdf", filename=descarga)
+
+
 @router.get("/", response_model=List[EvaluacionListResponse])
 def listar_evaluaciones(
     db: Session = Depends(get_db),
@@ -287,7 +437,8 @@ def listar_evaluaciones(
         joinedload(Evaluacion.curso).joinedload(Curso.nivel),
         joinedload(Evaluacion.asignatura),
         joinedload(Evaluacion.observador),
-        joinedload(Evaluacion.plantilla)
+        joinedload(Evaluacion.plantilla),
+        joinedload(Evaluacion.pdf_visita)
     )
 
     # Join con Docente para poder filtrar por colegio
@@ -332,7 +483,8 @@ def listar_evaluaciones(
             "usuario_id": e.usuario_id,
             "estado": e.estado.value if e.estado else "BORRADOR",
             "codigo_firma": e.codigo_firma,
-            "fecha_guardado": e.fecha_guardado
+            "fecha_guardado": e.fecha_guardado,
+            "tiene_pdf": e.pdf_visita is not None
         })
     return result
 
@@ -561,7 +713,7 @@ def get_stats(
     evaluaciones = query.all()
 
     # Filtro por plataforma (según el formato de la plantilla)
-    VISITA_FORMATOS = ("UTP", "ORIENTACION")
+    VISITA_FORMATOS = ("UTP", "ORIENTACION", "PIE")
     if plataforma == "visita":
         evaluaciones = [e for e in evaluaciones
                         if e.plantilla and e.plantilla.formato in VISITA_FORMATOS]
@@ -796,9 +948,9 @@ def stats_visitas_por_rol(
 ):
     """Estadísticas de visitas (plataforma Visita) agrupadas por ROL del visitador.
 
-    Reporte de actividad: cuenta TODAS las visitas registradas (cualquier estado)
-    de pautas con formato de visita (UTP / ORIENTACION) — no solo las firmadas —,
-    porque mide cuántas visitas hizo cada persona y cuándo.
+    Reporte de actividad: cuenta solo las visitas en estado CERRADA
+    de pautas con formato de visita (UTP / ORIENTACION), porque mide cuántas
+    visitas cerró cada persona y cuándo.
 
     - Se clasifica por el COLEGIO del visitador (Usuario.colegio_id); si el visitador
       tiene varios colegios, se usa el del docente visitado cuando coincide.
@@ -808,7 +960,7 @@ def stats_visitas_por_rol(
     - El mes se toma de la fecha de la visita (marzo a noviembre).
     - No-admin: solo su(s) colegio(s). Admin: todos.
     """
-    VISITA_FORMATOS = ("UTP", "ORIENTACION")
+    VISITA_FORMATOS = ("UTP", "ORIENTACION", "PIE")
     ROLES = ["inspectoria", "director", "utp", "pie", "orien_conv"]
     year = int(anio) if anio else datetime.now().year
 
@@ -818,8 +970,7 @@ def stats_visitas_por_rol(
     es_admin = current_user.rol_id == 1
     user_colegios = set(_parse_colegio_ids(current_user.colegio_id)) if current_user.colegio_id else set()
 
-    # Cuenta visitas en cualquier estado (borrador, listo para firma, firmada, cerrada):
-    # es un reporte de actividad por persona, no de firmas.
+    # Solo cuenta visitas CERRADAS (se filtra más abajo por e.estado).
     evals = db.query(Evaluacion).options(
         joinedload(Evaluacion.observador),
         joinedload(Evaluacion.plantilla),
@@ -827,6 +978,7 @@ def stats_visitas_por_rol(
     ).all()
 
     data = {}  # colegio_nombre -> {"por_rol_mes": {...}, "_obs": {obs_id: {...}}}
+    borradores_total = 0  # visitas en estado BORRADOR (mismos criterios, sin contar en gráficos)
 
     for e in evals:
         if not e.plantilla or e.plantilla.formato not in VISITA_FORMATOS:
@@ -857,6 +1009,14 @@ def stats_visitas_por_rol(
 
         # Restricción de acceso por colegio (no-admin)
         if not es_admin and user_colegios and col_id not in user_colegios:
+            continue
+
+        # Las visitas en BORRADOR solo alimentan el contador del card aparte.
+        if e.estado == EvaluacionEstado.BORRADOR:
+            borradores_total += 1
+            continue
+        # Todos los gráficos/tablas se construyen solo con visitas CERRADAS.
+        if e.estado != EvaluacionEstado.CERRADA:
             continue
 
         col_name = colegios_map.get(col_id, f"Colegio {col_id}")
@@ -916,7 +1076,7 @@ def stats_visitas_por_rol(
             "por_observador": observadores,
         }
 
-    return {"anio": year, "roles": ROLES, "data": out}
+    return {"anio": year, "roles": ROLES, "data": out, "borradores": borradores_total}
 
 
 @router.get("/talent-map")
@@ -946,7 +1106,7 @@ def get_talent_map(
     evaluaciones = query.all()
 
     # Filtro por plataforma (formato de la plantilla)
-    VISITA_FORMATOS = ("UTP", "ORIENTACION")
+    VISITA_FORMATOS = ("UTP", "ORIENTACION", "PIE")
     if plataforma == "visita":
         evaluaciones = [e for e in evaluaciones
                         if e.plantilla and e.plantilla.formato in VISITA_FORMATOS]
@@ -1042,17 +1202,20 @@ async def get_public_detail(
             comentarios_data = json.loads(evaluacion.comentarios)
         except Exception:
             comentarios_data = {"raw": evaluacion.comentarios}
-            
+    is_pie = (evaluacion.plantilla.formato == "PIE") if evaluacion.plantilla else False
+    promedio_val = 0.0 if is_pie else (float(evaluacion.promedio) if evaluacion.promedio else 0.0)
+
     return {
         "id": evaluacion.id,
         "plantilla_id": evaluacion.plantilla_id,
+        "plantilla_nombre": evaluacion.plantilla.nombre if evaluacion.plantilla else "Acompañamiento",
         "formato": evaluacion.plantilla.formato if evaluacion.plantilla else "ORIENTACION",
         "docente_nombre": evaluacion.docente.nombre,
         "colegio_nombre": evaluacion.docente.colegio.nombre,
         "curso": f"{evaluacion.curso.nivel.nombre} {evaluacion.curso.letra}",
         "asignatura": evaluacion.asignatura.nombre,
         "fecha": evaluacion.fecha,
-        "promedio": float(evaluacion.promedio) if evaluacion.promedio else 0.0,
+        "promedio": promedio_val,
         "estado": evaluacion.estado.value,
         "sintesis_retro": evaluacion.sintesis_retro,
         "acuerdos_mejora": evaluacion.acuerdos_mejora,
@@ -1599,6 +1762,18 @@ def eliminar_evaluacion(
         eliminado_por_username=current_user.username
     )
     db.add(registro)
+
+    # Si es una visita histórica subida como PDF, borrar también el archivo del disco.
+    # (La fila pdf_visita se elimina en cascada por la relación.)
+    pdf = db.query(PdfVisita).filter(PdfVisita.evaluacion_id == evaluacion.id).first()
+    if pdf:
+        base_uploads = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "uploads")
+        ruta_absoluta = os.path.join(base_uploads, pdf.ruta_archivo)
+        try:
+            if os.path.exists(ruta_absoluta):
+                os.remove(ruta_absoluta)
+        except OSError as e:
+            print(f"[PDF] No se pudo borrar el archivo {ruta_absoluta}: {e}")
 
     db.delete(evaluacion)
     db.commit()

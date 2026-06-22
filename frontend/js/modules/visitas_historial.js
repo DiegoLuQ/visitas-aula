@@ -54,6 +54,24 @@ function visitaActionButtons(v) {
     const canSign = v.estado !== 'FIRMADA' && v.estado !== 'CERRADA';
     const safeNombre = String(v.plantilla_nombre || '').replace(/'/g, "\\'");
     const safeSlug = String(v.plantilla_slug || '').replace(/'/g, "\\'");
+
+    // Visitas históricas subidas como PDF: visor + descarga (no tienen pauta editable).
+    if (v.tiene_pdf) {
+        const tituloPdf = `Visita ${v.docente_nombre || ''} · ${formatFecha(v.fecha)}`.replace(/'/g, "\\'");
+        return `
+            <button class="btn btn-sm btn-info" onclick="window.app.openPdfViewer(${v.id}, '${tituloPdf}')" title="Ver PDF" style="padding: 6px 10px; border-radius: 6px;">
+                <i class="fas fa-file-pdf"></i>
+            </button>
+            <button class="btn btn-sm" onclick="window.app.descargarPdfVisita(${v.id}, 'visita_${v.id}.pdf')" title="Descargar PDF" style="padding: 6px 10px; border-radius: 6px; background-color:#0ea5e9; color:#fff;">
+                <i class="fas fa-download"></i>
+            </button>
+            ${isAdmin ? `
+            <button class="btn btn-sm btn-danger" onclick="window.app.eliminarVisita(${v.id})" title="Eliminar" style="padding: 6px 10px; border-radius: 6px;">
+                <i class="fas fa-trash"></i>
+            </button>` : ''}
+        `;
+    }
+
     return `
         <button class="btn btn-sm btn-info" onclick="window.app.verDetalleVisita(${v.id}, ${v.plantilla_id}, '${safeNombre}', '${safeSlug}')" title="Ver Detalle" style="padding: 6px 10px; border-radius: 6px;">
             <i class="fas fa-eye"></i>

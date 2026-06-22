@@ -823,12 +823,14 @@ async function renderVisitaRolReports(anio) {
     });
     const colegios = Object.keys(data);
     const anioQuery = resp.anio || anio || new Date().getFullYear();
+    const borradores = resp.borradores || 0;
 
     if (colegios.length === 0) {
         // Mostramos la tabla vacía (con la estructura de roles) + los criterios,
         // para que se vea la sección y se entienda por qué los conteos están en 0.
         const emptyPorRolMes = {};
         cont.innerHTML = `
+            ${buildBorradoresCard(borradores)}
             <div class="dimension-card full-width">
                 <div class="dimension-header" style="background:#002b5e; border-bottom:none;">
                     <h3 style="color:#fff;">Visitas por Rol — ${anioQuery}</h3>
@@ -840,16 +842,17 @@ async function renderVisitaRolReports(anio) {
                         Una visita se cuenta aquí si:
                         <ul style="margin:8px 0 0 18px;">
                             <li>la realizó un usuario cuyo <strong>rol</strong> es uno de: Director, Inspectoría, UTP, Orient./Conv. o PIE, y</li>
-                            <li>su fecha está en el año <strong>${anioQuery}</strong> (meses marzo a noviembre).</li>
+                            <li>su fecha está en el año <strong>${anioQuery}</strong> (meses marzo a noviembre), y</li>
+                            <li>su estado es <strong>CERRADA</strong>.</li>
                         </ul>
-                        <span style="display:block; margin-top:8px;">Se cuenta en cualquier estado (borrador, lista para firma, firmada o cerrada). Las visitas creadas por una cuenta <strong>Admin</strong> o <strong>Usuario</strong> no se contabilizan, porque esos no son roles de visita.</span>
+                        <span style="display:block; margin-top:8px;">Solo se contabilizan las visitas <strong>CERRADAS</strong>. Las visitas creadas por una cuenta <strong>Admin</strong> o <strong>Usuario</strong> no se contabilizan, porque esos no son roles de visita.</span>
                     </div>
                 </div>
             </div>`;
         return;
     }
 
-    let html = '';
+    let html = buildBorradoresCard(borradores);
 
     // Una tarjeta por colegio: tabla + gráfico por semestre
     colegios.forEach((col, idx) => {
@@ -906,6 +909,22 @@ async function renderVisitaRolReports(anio) {
         buildSemesterChart(`vrolSem_${idx}`, `sem_${idx}`, data[col].por_rol_mes, roles, col);
     });
     buildAnnualChart('vrolAnual', 'anual', data, colegios);
+}
+
+// Card único con el total de visitas en estado BORRADOR (no entran en los gráficos).
+function buildBorradoresCard(borradores) {
+    const n = borradores || 0;
+    return `
+        <div class="dimension-card full-width" style="margin-bottom:24px;">
+            <div class="dimension-body" style="display:flex; align-items:center; gap:18px; padding:20px 24px;">
+                <div style="font-size:2.4rem; line-height:1;">📝</div>
+                <div style="flex:1;">
+                    <div style="font-size:0.8rem; font-weight:700; color:#92400e; text-transform:uppercase; letter-spacing:0.5px;">Visitas en Borrador</div>
+                    <div style="font-size:0.82rem; color:#64748b; margin-top:2px;">Aún sin cerrar — no se incluyen en los gráficos ni en las metas.</div>
+                </div>
+                <div style="font-size:2.6rem; font-weight:800; color:#b45309; min-width:60px; text-align:right;">${n}</div>
+            </div>
+        </div>`;
 }
 
 function buildRolTable(porRolMes, roles) {

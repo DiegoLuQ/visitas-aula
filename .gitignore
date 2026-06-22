@@ -108,3 +108,8 @@ backend/check_db.py
 backend/verify_model.py
 backend/run_migration.py
 backend/venv/
+
+# ==========================================
+# Archivos subidos (PDF de visitas históricas)
+# ==========================================
+backend/uploads/

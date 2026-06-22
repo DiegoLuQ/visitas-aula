@@ -52,21 +52,28 @@ import {
 import { initTheme } from './modules/theme.js';
 import { 
     loadVisitasDashboard, initVisitaForm, guardarVisita, nuevaVisitaDocente, loadVisitaDocentes, cambiarTipoPauta,
-    showModalDetalleVisitasDocente, setVisitaDetalleFiltro, setVisitaDetalleAnio, agregarFilaEstudiante, reordenarNumeracionEstudiantes, verLiderazgoDocente
+    showModalDetalleVisitasDocente, setVisitaDetalleFiltro, setVisitaDetalleAnio, agregarFilaEstudiante, reordenarNumeracionEstudiantes, verLiderazgoDocente,
+    actualizarPromediosPie
 } from './modules/visitas.js';
 import {
     loadVisitasHistorial, aplicarFiltros as aplicarFiltrosVisitas, limpiarFiltros as limpiarFiltrosVisitas,
     verDetalleVisita, eliminarVisita, abrirModalFirma, iniciarFirmaDigital, iniciarFirmaEmail, confirmarEnvioFirma,
     regenerarLinkFirma, enviarPautaResumida, confirmarEnvioPauta
 } from './modules/visitas_historial.js';
-import { 
+import {
     initUtpPauta, updateUtpScore, updateUtpEvidence, addUtpPlanRow, removeUtpPlanRow, updateUtpPlanField, confirmUtpSave,
     nextStep, prevStep, setUtpViewMode
 } from './modules/utp_pauta.js';
+import {
+    initSubirVisita, loadSubirVisitaDocentes, onSubirVisitaArchivo, guardarSubirVisita
+} from './modules/subir_visita.js';
+import { openPdfViewer, descargarPdfVisita } from './modules/pdf_viewer.js';
+import { submitChangePassword } from './modules/cambiar_contrasena.js';
 
 // Expose to window for HTML onclick/onchange handlers
 const app = {
     logout,
+    submitChangePassword,
     navigateTo,
     showModal,
     closeModal,
@@ -129,9 +136,14 @@ const app = {
     // Visitas
     loadVisitasDashboard, initVisitaForm, guardarVisita, nuevaVisitaDocente, loadVisitaDocentes, cambiarTipoPauta,
     showModalDetalleVisitasDocente, setVisitaDetalleFiltro, setVisitaDetalleAnio, agregarFilaEstudiante, reordenarNumeracionEstudiantes, verLiderazgoDocente,
+    actualizarPromediosPie,
     // UTP Pauta
     initUtpPauta, updateUtpScore, updateUtpEvidence, addUtpPlanRow, removeUtpPlanRow, updateUtpPlanField, confirmUtpSave,
     nextStep, prevStep, setUtpViewMode,
+    // Subir Visita (PDF histórico)
+    initSubirVisita, loadSubirVisitaDocentes, onSubirVisitaArchivo, guardarSubirVisita,
+    // Visor de PDF
+    openPdfViewer, descargarPdfVisita,
     // Visitas Historial
     loadVisitasHistorial, aplicarFiltrosVisitas, limpiarFiltrosVisitas,
     verDetalleVisita, eliminarVisita,
@@ -216,6 +228,12 @@ window.addEventListener('page-navigation', async (e) => {
             break;
         case 'visitas-historial':
             await loadVisitasHistorial();
+            break;
+        case 'subir-visita':
+            await initSubirVisita();
+            break;
+        case 'cambiar-contrasena':
+            document.getElementById('newPasswordInput')?.focus();
             break;
     }
 });

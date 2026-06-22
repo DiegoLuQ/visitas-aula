@@ -11,7 +11,7 @@
 
 // Páginas que pertenecen a cada plataforma (para mostrar/ocultar los menús)
 export const LIDERAZGO_PAGES = ['inicio', 'evaluaciones', 'nueva-evaluacion'];
-export const VISITA_PAGES = ['visitas-dashboard', 'visitas-nueva', 'visitas-historial'];
+export const VISITA_PAGES = ['visitas-dashboard', 'visitas-nueva', 'subir-visita', 'visitas-historial'];
 
 // Configuración de acceso por rol (clave en minúsculas)
 const ROLE_CONFIG = {
@@ -22,28 +22,28 @@ const ROLE_CONFIG = {
     director: {
         platforms: ['visita'],
         pages: [
-            'visitas-dashboard', 'visitas-nueva', 'visitas-historial',
-            'docentes', 'asignaturas', 'plantilla', 'reportes', 'metas'
+            'visitas-dashboard', 'visitas-nueva', 'subir-visita', 'visitas-historial',
+            'docentes', 'asignaturas', 'plantilla', 'reportes', 'metas', 'cambiar-contrasena'
         ]
     },
     liderazgo: {
         platforms: ['liderazgo'],
         pages: [
             'inicio', 'evaluaciones', 'nueva-evaluacion',
-            'colegios', 'docentes', 'asignaturas', 'reportes'
+            'colegios', 'docentes', 'asignaturas', 'reportes', 'cambiar-contrasena'
         ]
     },
     orien_conv: {
         platforms: ['liderazgo', 'visita'],
         pages: [
             'inicio', 'evaluaciones', 'nueva-evaluacion',
-            'visitas-dashboard', 'visitas-nueva', 'visitas-historial',
-            'docentes', 'cursos', 'asignaturas'
+            'visitas-dashboard', 'visitas-nueva', 'subir-visita', 'visitas-historial',
+            'docentes', 'cursos', 'asignaturas', 'plantilla', 'cambiar-contrasena'
         ]
     },
     usuario: {
         platforms: ['liderazgo'],
-        pages: ['inicio', 'evaluaciones', 'nueva-evaluacion']
+        pages: ['inicio', 'evaluaciones', 'nueva-evaluacion', 'cambiar-contrasena']
     }
 };
 // utp, pie e inspectoria tienen el mismo acceso a módulos que orien_conv

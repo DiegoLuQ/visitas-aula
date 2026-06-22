@@ -1,0 +1,69 @@
+
+<!-- Página Subir Visita (PDF histórico) -->
+<div id="pageSubirVisita" class="page">
+    <div class="p-4 md:p-8">
+        <div class="max-w-3xl mx-auto">
+            <div class="visita-form-card animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div class="form-header bg-slate-900 text-white p-5 sm:p-6 rounded-t-3xl">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-white/10 w-12 h-12 rounded-2xl flex items-center justify-center border border-white/10">
+                            <i class="fas fa-file-arrow-up text-xl"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <h3 class="text-xl sm:text-2xl font-black">Subir Visita</h3>
+                            <p class="text-slate-400 text-sm font-medium">Registra una visita histórica desde su PDF (queda CERRADA)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <form id="subirVisitaForm" class="p-5 sm:p-8 bg-white rounded-b-3xl shadow-xl space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="form-group">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Colegio</label>
+                            <select id="subirVisitaColegio" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none" required onchange="window.app.loadSubirVisitaDocentes(this.value)">
+                                <option value="">Seleccione Colegio</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Docente</label>
+                            <select id="subirVisitaDocente" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none" required disabled>
+                                <option value="">Seleccione Docente</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Tipo de pauta utilizada</label>
+                            <select id="subirVisitaPlantilla" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none" required>
+                                <option value="">Seleccione Pauta</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Fecha de la visita</label>
+                            <input type="date" id="subirVisitaFecha" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Fecha de retroalimentación <span class="text-slate-400 normal-case font-medium">(opcional)</span></label>
+                            <input type="date" id="subirVisitaFechaRetro" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Archivo PDF</label>
+                        <label for="subirVisitaArchivo" id="subirVisitaDropzone" class="flex flex-col items-center justify-center gap-2 w-full border-2 border-dashed border-slate-200 rounded-2xl p-8 cursor-pointer hover:border-indigo-300 hover:bg-slate-50 transition-all text-center">
+                            <i class="fas fa-cloud-arrow-up text-3xl text-indigo-400"></i>
+                            <span id="subirVisitaArchivoNombre" class="text-sm font-semibold text-slate-600">Haz clic para seleccionar el PDF</span>
+                            <span class="text-xs text-slate-400">Solo PDF · máx. 25 MB · se comprimirá automáticamente</span>
+                        </label>
+                        <input type="file" id="subirVisitaArchivo" accept="application/pdf,.pdf" class="hidden" required onchange="window.app.onSubirVisitaArchivo(this)">
+                    </div>
+
+                    <div class="flex flex-wrap justify-between items-center gap-4 bg-slate-50 p-4 sm:p-6 rounded-3xl">
+                        <button type="button" class="text-slate-400 font-bold hover:text-slate-600 transition-colors" onclick="app.navigateTo('visitas-dashboard')">CANCELAR</button>
+                        <button type="submit" class="bg-indigo-600 text-white px-10 py-4 rounded-2xl font-black shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 transition-all transform hover:-translate-y-1">
+                            <i class="fas fa-upload mr-2"></i>SUBIR VISITA
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

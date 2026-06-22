@@ -11,7 +11,7 @@ import pandas as pd
 from database import get_db
 from models import Plantilla, Dimension, Subdimension, Usuario, Evaluacion
 from schemas import PlantillaCreate, PlantillaResponse, DimensionResponse, PlantillaUpdate, PlantillaDuplicate
-from auth import get_current_active_user, require_admin, require_admin_or_director
+from auth import get_current_active_user, require_admin, require_admin_or_director, require_plantilla_manager
 
 router = APIRouter(prefix="/eval_plantillas", tags=["Plantillas de Evaluación"])
 
@@ -183,7 +183,7 @@ def duplicar_plantilla(
     plantilla_id: int,
     payload: PlantillaDuplicate,
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(require_admin_or_director)
+    current_user: Usuario = Depends(require_plantilla_manager)
 ):
     original = db.query(Plantilla).filter(Plantilla.id == plantilla_id).first()
     if not original:
@@ -250,7 +250,7 @@ def duplicar_plantilla(
 def delete_plantilla(
     plantilla_id: int,
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(require_admin_or_director)
+    current_user: Usuario = Depends(require_plantilla_manager)
 ):
     db_plantilla = db.query(Plantilla).filter(Plantilla.id == plantilla_id).first()
     if not db_plantilla:
@@ -347,7 +347,7 @@ def import_plantilla_excel(
     colegio_id: Optional[int] = Form(None),
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(require_admin_or_director)
+    current_user: Usuario = Depends(require_plantilla_manager)
 ):
     """Crea una NUEVA plantilla a partir de la estructura (dimensiones + indicadores) de un Excel."""
     if not file.filename or not file.filename.lower().endswith(('.xlsx', '.xls')):

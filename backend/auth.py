@@ -108,6 +108,18 @@ def require_docente_manager(current_user: Usuario = Depends(get_current_active_u
     )
 
 
+def require_plantilla_manager(current_user: Usuario = Depends(get_current_active_user)) -> Usuario:
+    """Roles autorizados a gestionar plantillas: admin, director, utp, pie, orien_conv."""
+    if current_user.rol_id == 1:
+        return current_user
+    if current_user.rol and (current_user.rol.nombre or "").lower() in ("director", "utp", "pie", "orien_conv"):
+        return current_user
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Solo administradores, directores, UTP, coordinadores PIE o Convivencia pueden gestionar plantillas"
+    )
+
+
 def require_not_usuario(current_user: Usuario = Depends(get_current_active_user)) -> Usuario:
     """Cualquier usuario autenticado cuyo rol NO sea 'usuario'."""
     rol_nombre = (current_user.rol.nombre or "").lower() if current_user.rol else ""

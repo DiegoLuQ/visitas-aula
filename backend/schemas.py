@@ -61,6 +61,14 @@ class TokenData(BaseModel):
     username: Optional[str] = None
 
 
+class PasswordChangeRequest(BaseModel):
+    new_password: str
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+
 class ColegioBase(BaseModel):
     nombre: str
     direccion: Optional[str] = None
@@ -437,6 +445,7 @@ class EvaluacionListResponse(BaseModel):
     token_full: Optional[str] = None
     token_pedagogico: Optional[str] = None
     fecha_guardado: Optional[datetime]
+    tiene_pdf: bool = False  # True si es una visita histórica subida como PDF
 
     class Config:
         from_attributes = True

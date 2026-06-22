@@ -168,8 +168,9 @@ class Evaluacion(Base):
     plantilla_id = Column(Integer, ForeignKey("eval_plantillas.id"), nullable=True)
     usuario_id = Column(Integer, ForeignKey("auth_usuarios.id"), nullable=False)
     docente_id = Column(Integer, ForeignKey("cat_docentes.id"), nullable=False)
-    curso_id = Column(Integer, ForeignKey("cat_cursos.id"), nullable=False)
-    asignatura_id = Column(Integer, ForeignKey("cat_asignaturas.id"), nullable=False)
+    # Nullable: las visitas históricas subidas como PDF no registran curso ni asignatura.
+    curso_id = Column(Integer, ForeignKey("cat_cursos.id"), nullable=True)
+    asignatura_id = Column(Integer, ForeignKey("cat_asignaturas.id"), nullable=True)
     observador_id = Column(Integer, ForeignKey("auth_usuarios.id"), nullable=True)
     fecha = Column(Date, nullable=False)
     duracion = Column(String(50))
@@ -205,6 +206,7 @@ class Evaluacion(Base):
     apoyos = relationship("EvaluacionApoyo", back_populates="evaluacion", cascade="all, delete-orphan")
     fortalezas_aspectos = relationship("FortalezaAspecto", back_populates="evaluacion", cascade="all, delete-orphan")
     estudiantes_observados = relationship("EvaluacionEstudiante", back_populates="evaluacion", cascade="all, delete-orphan")
+    pdf_visita = relationship("PdfVisita", back_populates="evaluacion", uselist=False, cascade="all, delete-orphan")
 
 
 class EvaluacionEstudiante(Base):
@@ -314,3 +316,23 @@ class DeletedEvaluation(Base):
     eliminado_por_username = Column(String(100))
     fecha_eliminacion = Column(DateTime(timezone=True), server_default=func.now())
     motivo = Column(Text, nullable=True)
+
+
+class PdfVisita(Base):
+    """Respaldo documental de visitas históricas subidas como PDF.
+
+    Cada registro apunta a una Evaluacion (estado CERRADA) creada solo con los
+    datos esenciales (docente, plantilla, usuario, fechas). El PDF se comprime y
+    se guarda en el filesystem del backend; aquí solo se almacena la ruta.
+    """
+    __tablename__ = "pdf_visita"
+
+    id = Column(Integer, primary_key=True, index=True)
+    evaluacion_id = Column(Integer, ForeignKey("eval_evaluaciones.id"), nullable=False, unique=True)
+    ruta_archivo = Column(String(500), nullable=False)   # ruta relativa dentro de backend/uploads
+    nombre_original = Column(String(255), nullable=True)
+    tamano_original = Column(Integer, nullable=True)     # bytes antes de comprimir
+    tamano_comprimido = Column(Integer, nullable=True)   # bytes luego de comprimir
+    fecha_subida = Column(DateTime(timezone=True), server_default=func.now())
+
+    evaluacion = relationship("Evaluacion", back_populates="pdf_visita")

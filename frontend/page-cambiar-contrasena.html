@@ -1,0 +1,30 @@
+<!-- Página Cambiar Contraseña -->
+<div id="pageCambiarContrasena" class="page">
+    <div class="page-header">
+        <h1>Cambiar Contraseña</h1>
+        <p style="color: #666; margin-top: 5px;">Modifica tu contraseña de acceso a la plataforma. Por seguridad, la nueva contraseña te será enviada por correo electrónico.</p>
+    </div>
+
+    <div class="card" style="margin-top: 20px; max-width: 500px; margin-left: 0;">
+        <div class="card-header">
+            <h3>🔑 Actualizar Contraseña</h3>
+        </div>
+        <div class="card-body">
+            <form id="formCambiarContrasena" onsubmit="window.app.submitChangePassword(event)">
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label for="newPasswordInput">Contraseña Nueva *</label>
+                    <input type="password" id="newPasswordInput" class="form-control" placeholder="Mínimo 4 caracteres" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label for="confirmPasswordInput">Repita Contraseña *</label>
+                    <input type="password" id="confirmPasswordInput" class="form-control" placeholder="Repite la nueva contraseña" required>
+                </div>
+                <div style="text-align: right;">
+                    <button type="submit" class="btn btn-primary" id="btnSavePassword">
+                        <i class="fas fa-save" style="margin-right: 6px;"></i> Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

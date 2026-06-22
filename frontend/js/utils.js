@@ -170,7 +170,9 @@ export async function loadModularPages() {
         'page-visitas-dashboard.html',
         'page-visitas-nueva.html',
         'page-visitas-historial.html',
-        'page-utp-pauta.html'
+        'page-subir-visita.html',
+        'page-utp-pauta.html',
+        'page-cambiar-contrasena.html'
     ];
 
     // Limpiar contenedor (opcional, pero para asegurar que está vacío)

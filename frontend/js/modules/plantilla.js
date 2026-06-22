@@ -447,6 +447,7 @@ export async function showModalEditPlantilla() {
                 <select id="modalPlantillaFormato" class="form-select" required>
                     <option value="ORIENTACION" ${plantilla.formato === 'ORIENTACION' ? 'selected' : ''}>Orientación / Convivencia</option>
                     <option value="UTP" ${plantilla.formato === 'UTP' ? 'selected' : ''}>UTP (por pasos)</option>
+                    <option value="PIE" ${plantilla.formato === 'PIE' ? 'selected' : ''}>PIE</option>
                     <option value="LIDERAZGO" ${plantilla.formato === 'LIDERAZGO' ? 'selected' : ''}>Liderazgo</option>
                 </select>
             </div>
@@ -567,6 +568,7 @@ export async function showModalImportPlantilla() {
                 <select id="impPlantillaFormato" class="form-select" required>
                     <option value="ORIENTACION">Orientación / Convivencia</option>
                     <option value="UTP">UTP (por pasos)</option>
+                    <option value="PIE">PIE</option>
                     <option value="LIDERAZGO">Liderazgo</option>
                 </select>
             </div>
@@ -636,7 +638,8 @@ export async function confirmImportPlantilla() {
 export function puedeCopiarPlantillas() {
     const u = state.currentUser;
     if (!u) return false;
-    return u.rol_id === 1 || (u.rol?.nombre || '').toLowerCase() === 'director';
+    const r = (u.rol?.nombre || '').toLowerCase();
+    return u.rol_id === 1 || r === 'director' || r === 'utp' || r === 'pie' || r === 'orien_conv';
 }
 
 function colegiosDelUsuario() {

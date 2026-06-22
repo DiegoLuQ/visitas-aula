@@ -111,6 +111,10 @@ export const api = {
             return api.get('/auth/me');
         },
 
+        async changePassword(newPassword) {
+            return api.post('/auth/change-password', { new_password: newPassword });
+        },
+
         async getUsers() {
             return api.get('/auth/users');
         },
@@ -287,6 +291,23 @@ export const api = {
                 headers: { 'Authorization': `Bearer ${api.getToken()}` }
             });
         },
+        async uploadVisita(formData) {
+            const response = await fetch(`${API_URL}/evaluaciones/upload-visita`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${api.getToken()}` },
+                body: formData
+            });
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({ detail: 'Error al subir la visita' }));
+                let message = error.detail || 'Error al subir la visita';
+                if (Array.isArray(message)) {
+                    message = message.map(err => `${err.msg} (${err.loc.join(' > ')})`).join(', ');
+                }
+                throw new Error(message);
+            }
+            return response.json();
+        },
+        pdfVisitaUrl(id) { return `${API_URL}/evaluaciones/${id}/pdf-visita`; },
         prepareSign(id) { return api.post(`/evaluaciones/${id}/prepare-sign`); },
         getSignToken(id) { return api.get(`/evaluaciones/${id}/sign-token`); },
         publicSign(data) { return api.post('/evaluaciones/public-sign', data); },

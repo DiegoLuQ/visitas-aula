@@ -559,6 +559,7 @@
                 const val = resp ? resp.valor : null;
                 const isNA = val === null || val === undefined || val === 0;
                 const estrategia = (resp && resp.estrategia && resp.estrategia.trim()) ? resp.estrategia.trim() : '';
+                const labelEstrategia = (e.formato === 'PIE' || e.formato === 'ORIENTACION') ? 'Comentario / Observación' : 'Estrategia registrada';
                 return `
                     <div class="ind-item">
                         <div class="ind-top">
@@ -568,7 +569,7 @@
                             </div>
                             <div class="ind-score ${isNA ? 'na' : ''}">${isNA ? 'N/A' : Number(val).toFixed(1)}</div>
                         </div>
-                        ${estrategia ? `<div class="ind-estrategia"><strong>Estrategia registrada</strong>${escapeHtml(estrategia)}</div>` : ''}
+                        ${estrategia ? `<div class="ind-estrategia"><strong>${labelEstrategia}</strong>${escapeHtml(estrategia)}</div>` : ''}
                     </div>`;
             }).join('');
 
@@ -653,7 +654,8 @@
 
         const isUTP = e.formato === 'UTP' || e.plantilla_id === 3;
         const isOrientacion = e.formato === 'ORIENTACION' || e.plantilla_id === 2;
-        const isVisita = isUTP || isOrientacion;
+        const isPIE = e.formato === 'PIE' || (e.plantilla_nombre && e.plantilla_nombre.toUpperCase().includes('PIE'));
+        const isVisita = isUTP || isOrientacion || isPIE;
 
         // Guardar datos para el modal de desglose
         actaState.data = e;
@@ -723,36 +725,9 @@
                     </div>
                 </div>
 
-                <!-- Retroalimentación Descriptiva (UTP) -->
-                <div class="section">
-                    <h2 class="section-title"><span class="section-num">${!isDocenteMode ? 'V' : 'IV'}.</span> Retroalimentación Descriptiva</h2>
-                    <div class="info-grid" style="margin-bottom: 20px;">
-                        <div class="info-item">
-                            <label>Fecha Entrevista</label>
-                            <span>${r.fecha_entrevista ? formatDate(r.fecha_entrevista, false) : 'N/A'}</span>
-                        </div>
-                        <div class="info-item" style="grid-column: span 2;">
-                            <label>Hora Entrevista</label>
-                            <span>${r.hora_entrevista || 'N/A'}</span>
-                        </div>
-                    </div>
-                    <div class="detail-box">
-                        <span class="detail-label">Logros principales del docente según criterios:</span>
-                        <p class="detail-content">${r.logros || 'No se registraron logros específicos.'}</p>
-                    </div>
-                    <div class="detail-box">
-                        <span class="detail-label">Aspectos principales a mejorar según criterios:</span>
-                        <p class="detail-content">${r.mejoras || 'No se registraron aspectos a mejorar.'}</p>
-                    </div>
-                    <div class="detail-box">
-                        <span class="detail-label">Síntesis y Acuerdos con docente / Seguimiento próxima visita:</span>
-                        <p class="detail-content">${r.sintesis_acuerdos || 'Sin síntesis registrada.'}</p>
-                    </div>
-                </div>
-
                 <!-- Plan Estratégico de Cambios (UTP) -->
                 <div class="section">
-                    <h2 class="section-title"><span class="section-num">${!isDocenteMode ? 'VI' : 'V'}.</span> Plan Estratégico de Cambios</h2>
+                    <h2 class="section-title"><span class="section-num">${!isDocenteMode ? 'V' : 'IV'}.</span> Plan Estratégico de Cambios</h2>
                     ${plan.length > 0 ? `
                     <div class="plan-list">
                         ${plan.map((row, idx) => `
@@ -784,6 +759,33 @@
                         `).join('')}
                     </div>
                     ` : `<div class="detail-box" style="text-align: center; color: var(--text-muted); font-style: italic;">No se registraron cambios en el plan estratégico.</div>`}
+                </div>
+
+                <!-- Retroalimentación Descriptiva (UTP) -->
+                <div class="section">
+                    <h2 class="section-title"><span class="section-num">${!isDocenteMode ? 'VI' : 'V'}.</span> Retroalimentación Descriptiva</h2>
+                    <div class="info-grid" style="margin-bottom: 20px;">
+                        <div class="info-item">
+                            <label>Fecha Entrevista</label>
+                            <span>${r.fecha_entrevista ? formatDate(r.fecha_entrevista, false) : 'N/A'}</span>
+                        </div>
+                        <div class="info-item" style="grid-column: span 2;">
+                            <label>Hora Entrevista</label>
+                            <span>${r.hora_entrevista || 'N/A'}</span>
+                        </div>
+                    </div>
+                    <div class="detail-box">
+                        <span class="detail-label">Logros principales del docente según criterios:</span>
+                        <p class="detail-content">${r.logros || 'No se registraron logros específicos.'}</p>
+                    </div>
+                    <div class="detail-box">
+                        <span class="detail-label">Aspectos principales a mejorar según criterios:</span>
+                        <p class="detail-content">${r.mejoras || 'No se registraron aspectos a mejorar.'}</p>
+                    </div>
+                    <div class="detail-box">
+                        <span class="detail-label">Síntesis y Acuerdos con docente / Seguimiento próxima visita:</span>
+                        <p class="detail-content">${r.sintesis_acuerdos || 'Sin síntesis registrada.'}</p>
+                    </div>
                 </div>
             `;
         } else if (isOrientacion) {
@@ -871,6 +873,106 @@
                         <div class="detail-box">
                             <span class="detail-label">Retroalimentación:</span>
                             <p class="detail-content">${retroText || 'Sin retroalimentación registrada.'}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else if (isPIE) {
+            // FORMATO PIE
+            let resultsHtml = '';
+            if (!isDocenteMode) {
+                const dimNames = e.dimensiones_nombres && e.dimensiones_nombres.length > 0 ? e.dimensiones_nombres : [
+                    'CO-ENSEÑANZA', 'ESTRUCTURA DE LA CLASE', 'AMBIENTE PARA EL APRENDIZAJE'
+                ];
+                const dims = [
+                    { label: dimNames[0] || 'Dimensión 1', val: e.promedio_dim1 },
+                    { label: dimNames[1] || 'Dimensión 2', val: e.promedio_dim2 },
+                    { label: dimNames[2] || 'Dimensión 3', val: e.promedio_dim3 }
+                ];
+                resultsHtml = `
+                    <div class="section">
+                        <h2 class="section-title"><span class="section-num">III.</span> Resultados Cuantitativos</h2>
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>Dimensión PIE</th>
+                                    <th style="width: 120px; text-align: center;">Resultado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${dims.map(d => {
+                                    const isNA = d.val === null || d.val === undefined || d.val === 0;
+                                    return `<tr><td>${d.label}</td><td class="promedio-cell">${isNA ? 'N/A' : Number(d.val).toFixed(2)}</td></tr>`;
+                                }).join('')}
+                                <tr style="background:#003366; color:white; font-weight:800;">
+                                    <td style="border-radius: 0 0 0 12px;">PROMEDIO TOTAL</td>
+                                    <td class="promedio-cell" style="color:white; font-size:1.4rem; border-radius: 0 0 12px 0;">${e.promedio ? e.promedio.toFixed(2) : 'N/A'}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="summary-card">
+                            <div class="card">
+                                <h4>Desempeño PIE</h4>
+                                <p>${interpretarPIE(e.promedio)}</p>
+                            </div>
+                        </div>
+                        ${desgloseBtnHtml}
+                    </div>
+                `;
+            }
+
+            const obsCoordinadora = com.obs_coordinadora || '';
+            const obsEspecialista = com.obs_especialista || '';
+            const destacaCoordinadora = com.destaca_coordinadora || '';
+            const destacaEspecialista = com.destaca_especialista || '';
+            const mejorarCoordinadora = com.mejorar_coordinadora || '';
+            const mejorarEspecialista = com.mejorar_especialista || '';
+
+            const finalSectNum = !isDocenteMode ? 'IV' : 'III';
+
+            dynamicHtml = `
+                ${resultsHtml}
+                <div class="section">
+                    <h2 class="section-title"><span class="section-num">${finalSectNum}.</span> Observaciones y Retroalimentación PIE</h2>
+                    <div class="space-y-4" style="display: flex; flex-direction: column; gap: 24px;">
+                        <div>
+                            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--primary); margin-bottom: 10px;">IV. Observaciones</h3>
+                            <div class="summary-card" style="margin-top: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                                <div class="card">
+                                    <h4>Coordinadora PIE</h4>
+                                    <p style="font-weight: normal; font-size: 0.95rem; color: #334155; white-space: pre-wrap;">${obsCoordinadora || 'Sin comentarios.'}</p>
+                                </div>
+                                <div class="card" style="border-left-color: #0ea5e9;">
+                                    <h4>Especialista PIE</h4>
+                                    <p style="font-weight: normal; font-size: 0.95rem; color: #334155; white-space: pre-wrap;">${obsEspecialista || 'Sin comentarios.'}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--primary); margin-bottom: 10px;">V. ¿Qué se destaca de la experiencia observada?</h3>
+                            <div class="summary-card" style="margin-top: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                                <div class="card">
+                                    <h4>Coordinadora PIE</h4>
+                                    <p style="font-weight: normal; font-size: 0.95rem; color: #334155; white-space: pre-wrap;">${destacaCoordinadora || 'Sin comentarios.'}</p>
+                                </div>
+                                <div class="card" style="border-left-color: #0ea5e9;">
+                                    <h4>Especialista PIE</h4>
+                                    <p style="font-weight: normal; font-size: 0.95rem; color: #334155; white-space: pre-wrap;">${destacaEspecialista || 'Sin comentarios.'}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--primary); margin-bottom: 10px;">VI. ¿Qué se podría mejorar de lo observado?</h3>
+                            <div class="summary-card" style="margin-top: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                                <div class="card">
+                                    <h4>Coordinadora PIE</h4>
+                                    <p style="font-weight: normal; font-size: 0.95rem; color: #334155; white-space: pre-wrap;">${mejorarCoordinadora || 'Sin comentarios.'}</p>
+                                </div>
+                                <div class="card" style="border-left-color: #0ea5e9;">
+                                    <h4>Especialista PIE</h4>
+                                    <p style="font-weight: normal; font-size: 0.95rem; color: #334155; white-space: pre-wrap;">${mejorarEspecialista || 'Sin comentarios.'}</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1024,6 +1126,14 @@
         if (promedio >= 3.0) return 'Liderazgo Adecuado';
         if (promedio >= 2.0) return 'Liderazgo en Desarrollo';
         return 'Liderazgo Bajo';
+    }
+
+    function interpretarPIE(promedio) {
+        if (promedio === null || promedio === undefined || promedio === 0) return 'N/A';
+        if (promedio >= 3.5) return 'Excelente';
+        if (promedio >= 2.5) return 'Competente';
+        if (promedio >= 1.5) return 'Básico';
+        return 'Deficiente';
     }
 
     function formatDate(dateStr, showTime) {

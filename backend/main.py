@@ -239,6 +239,135 @@ def auto_migrate_roles():
         print(f"[MIGRACIÓN ROLES] Advertencia: {e}")
 
 
+def auto_migrate_pdf_visitas():
+    """Soporte para visitas históricas subidas como PDF.
+
+    - Crea la tabla pdf_visita (create_all ya la genera; se reasegura).
+    - Hace nullable curso_id y asignatura_id en eval_evaluaciones, porque las
+      visitas subidas solo registran docente, plantilla, usuario y fechas.
+    - Asegura la carpeta de almacenamiento de los PDF.
+    """
+    import os as _os
+    from sqlalchemy import text, inspect
+    try:
+        Base.metadata.create_all(bind=engine)
+
+        inspector = inspect(engine)
+        cols = {c['name']: c for c in inspector.get_columns('eval_evaluaciones')}
+        with engine.connect() as conn:
+            for col in ('curso_id', 'asignatura_id'):
+                if col in cols and not cols[col].get('nullable', True):
+                    print(f"[MIGRACIÓN] Haciendo nullable {col} en eval_evaluaciones...")
+                    conn.execute(text(f"ALTER TABLE eval_evaluaciones MODIFY {col} INTEGER NULL"))
+            conn.commit()
+
+        # Carpeta de almacenamiento de PDFs (backend/uploads/pdf_visitas)
+        uploads_dir = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "uploads", "pdf_visitas")
+        _os.makedirs(uploads_dir, exist_ok=True)
+    except Exception as e:
+        print(f"[MIGRACIÓN PDF VISITAS] Advertencia: {e}")
+
+
+def auto_migrate_pie_plantilla():
+    """Crea la plantilla PIE si no existe con sus dimensiones e indicadores."""
+    import json
+    from models import Plantilla, Dimension, Subdimension
+    try:
+        db = SessionLocal()
+        pie_exist = db.query(Plantilla).filter(Plantilla.slug == "PIE").first()
+        if not pie_exist:
+            print("[MIGRACIÓN] Inicializando plantilla PIE (Informe de Acompañamiento)...")
+            config = {
+                "escala": "4_niveles",
+                "niveles": [
+                    {"valor": 0, "nombre": "N/O", "color": "slate"},
+                    {"valor": 1, "nombre": "Deficiente", "color": "rose"},
+                    {"valor": 2, "nombre": "Básico", "color": "amber"},
+                    {"valor": 3, "nombre": "Competente", "color": "emerald"},
+                    {"valor": 4, "nombre": "Excelente", "color": "indigo"}
+                ],
+                "opcion_no_observado": {
+                    "permitido": True,
+                    "valor_guardado": 0,
+                    "excluir_del_calculo": True
+                }
+            }
+            plantilla = Plantilla(
+                nombre="Informe de Acompañamiento al Aula Común PIE",
+                nombre_largo="Informe de Acompañamiento al Aula Común PIE",
+                slug="PIE",
+                tipo="VISITA",
+                formato="PIE",
+                colegio_id=None,
+                config_puntuacion=json.dumps(config),
+                activa=True
+            )
+            db.add(plantilla)
+            db.flush()
+
+            dims_data = [
+                {
+                    "nombre": "CO-ENSEÑANZA",
+                    "indicadores": [
+                        "Se evidencia enseñanza complementaria.",
+                        "Evidencia enseñanza en equipo (co-enseñanza)."
+                    ]
+                },
+                {
+                    "nombre": "ESTRUCTURA DE LA CLASE",
+                    "indicadores": [
+                        "Participa del saludo o saluda al grupo curso al iniciar su actividad.",
+                        "Maneja la planificación o contenidos de la clase, lo que le permite intervenir en la misma.",
+                        "Interviene en el inicio.",
+                        "Participa activamente del desarrollo de la clase.",
+                        "Ejecuta el cierre mediante la retroalimentación o síntesis de lo enseñado.",
+                        "Se hace uso adecuado del tiempo, permitiendo ejecutar todos los momentos de la clase.",
+                        "Se evidencia material digital, concreto u otro recurso apropiado para facilitar los aprendizajes y el acceso a los objetivos.",
+                        "Promueve la participación de los estudiantes, especialmente los que presentan NEE.",
+                        "Realiza monitoreo constante de los aprendizajes de los estudiantes.",
+                        "Complementa con diferentes estrategias los momentos de la clase para el logro de habilidades cognitivas según la diversidad del grupo curso.",
+                        "Realiza o participa en pausas activas durante la clase o cambio de hora."
+                    ]
+                },
+                {
+                    "nombre": "AMBIENTE PARA EL APRENDIZAJE",
+                    "indicadores": [
+                        "Se cumple con el protocolo mencionando las normas dentro de la clase.",
+                        "Maneja de forma adecuada la disciplina de los estudiantes.",
+                        "Mantiene una relación cercana con los estudiantes.",
+                        "Contribuye a mantener un buen ambiente y orden a nivel del aula.",
+                        "Cumple con los horarios de inicio de clases.",
+                        "Se observan factores externos que interfieren en el desarrollo adecuado de la clase.",
+                        "Emplea Lenguaje formal y cálido en el trato con los estudiantes.",
+                        "Evidencia empleo de refuerzos positivos frente a las conductas o respuestas adecuadas de los estudiantes."
+                    ]
+                }
+            ]
+
+            for idx, d in enumerate(dims_data):
+                dim = Dimension(
+                    plantilla_id=plantilla.id,
+                    nombre=d["nombre"],
+                    orden=idx + 1
+                )
+                db.add(dim)
+                db.flush()
+
+                for s_idx, ind_text in enumerate(d["indicadores"]):
+                    sub = Subdimension(
+                        dimension_id=dim.id,
+                        nombre=f"Indicador {idx + 1}.{s_idx + 1}",
+                        descripcion=ind_text,
+                        orden=s_idx + 1
+                    )
+                    db.add(sub)
+            db.commit()
+            print(f"[MIGRACIÓN] Plantilla PIE creada con ID: {plantilla.id}")
+        db.close()
+    except Exception as e:
+        print(f"[MIGRACIÓN PIE] Error: {e}")
+
+
 auto_migrate_tokens()
 auto_migrate_reporting()
 auto_migrate_user_colegio()
@@ -246,6 +375,8 @@ auto_migrate_user_nombre_completo()
 auto_migrate_visitas_extras()
 auto_migrate_roles()
 auto_migrate_metas()
+auto_migrate_pdf_visitas()
+auto_migrate_pie_plantilla()
 
 
 from utils.tasks import scheduled_backup, scheduled_weekly_report

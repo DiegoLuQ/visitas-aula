@@ -11,8 +11,9 @@ import pandas as pd
 
 from database import get_db
 from models import Usuario, Rol, Colegio
-from schemas import UsuarioCreate, UsuarioResponse, UsuarioUpdate, Token, RolResponse
+from schemas import UsuarioCreate, UsuarioResponse, UsuarioUpdate, Token, RolResponse, PasswordChangeRequest, ForgotPasswordRequest
 from auth import verify_password, get_password_hash, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES, get_current_active_user, require_admin
+from utils.email import send_password_change_email
 
 router = APIRouter(prefix="/auth", tags=["Autenticación"])
 
@@ -116,6 +117,95 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 @router.get("/me", response_model=UsuarioResponse)
 def get_me(current_user: Usuario = Depends(get_current_active_user)):
     return current_user
+
+
+@router.post("/change-password")
+def change_password(
+    data: PasswordChangeRequest,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_active_user)
+):
+    if not data.new_password or len(data.new_password.strip()) < 4:
+        raise HTTPException(status_code=400, detail="La contraseña debe tener al menos 4 caracteres")
+        
+    current_user.password_hash = get_password_hash(data.new_password)
+    db.commit()
+    db.refresh(current_user)
+    
+    # Resolver tipo de colegio para remitente de correo
+    school_type = None
+    if current_user.email:
+        email_lower = current_user.email.lower()
+        if "@colegiodiegoportales.cl" in email_lower:
+            school_type = "DP"
+        elif "@colegiomacaya.cl" in email_lower:
+            school_type = "MC"
+            
+    # Enviar correo con la nueva contraseña
+    email_sent = send_password_change_email(
+        email=current_user.email,
+        username=current_user.username,
+        new_password=data.new_password,
+        school_type=school_type
+    )
+    
+    return {
+        "detail": "Contraseña actualizada correctamente y enviada al correo electrónico",
+        "email_sent": email_sent
+    }
+
+
+@router.post("/forgot-password")
+def forgot_password(data: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    import secrets
+    import string
+    
+    user = db.query(Usuario).filter(Usuario.email == data.email).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="El correo electrónico no está registrado"
+        )
+    
+    if user.activo == 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El usuario se encuentra inactivo. Contacte al administrador."
+        )
+    
+    # Generar nueva contraseña temporal de 8 caracteres legibles
+    alphabet = string.ascii_letters + string.digits
+    new_password = "".join(secrets.choice(alphabet) for _ in range(8))
+    
+    user.password_hash = get_password_hash(new_password)
+    db.commit()
+    db.refresh(user)
+    
+    # Resolver tipo de colegio para remitente de correo
+    school_type = None
+    email_lower = user.email.lower()
+    if "@colegiodiegoportales.cl" in email_lower:
+        school_type = "DP"
+    elif "@colegiomacaya.cl" in email_lower:
+        school_type = "MC"
+        
+    email_sent = send_password_change_email(
+        email=user.email,
+        username=user.username,
+        new_password=new_password,
+        school_type=school_type
+    )
+    
+    if not email_sent:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="No se pudo enviar el correo electrónico de recuperación"
+        )
+        
+    return {
+        "detail": "Se ha generado una nueva contraseña temporal y se ha enviado a tu correo electrónico."
+    }
+
 
 
 @router.get("/users", response_model=list[UsuarioResponse])

@@ -175,6 +175,7 @@
 
                 const isUTP = details.formato === 'UTP' || details.plantilla_id === 3;
                 const isOrientacion = details.formato === 'ORIENTACION' || details.plantilla_id === 2;
+                const isPIE = details.formato === 'PIE' || (details.plantilla_nombre && details.plantilla_nombre.toUpperCase().includes('PIE'));
 
                 if (isUTP) {
                     // FORMATO UTP
@@ -193,10 +194,40 @@
                             </div>
                         </div>
 
-                        <!-- III. Retroalimentación Descriptiva (UTP) -->
+                        <!-- III. Plan Estratégico de Cambios (UTP) -->
                         <div>
                             <div class="flex items-center gap-3 mb-4">
-                                <span class="text-xs font-black uppercase tracking-wider text-indigo-600">III. RETROALIMENTACIÓN DESCRIPTIVA</span>
+                                <span class="text-xs font-black uppercase tracking-wider text-indigo-600">III. PLAN ESTRATÉGICO DE CAMBIOS</span>
+                                <div class="h-[1px] bg-slate-200 flex-1"></div>
+                            </div>
+                            <div class="overflow-x-auto border border-slate-200 rounded-xl bg-white">
+                                <table class="w-full text-xs text-left">
+                                    <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase font-black text-[9px]">
+                                        <tr>
+                                            <th class="p-3">Cambio acordado</th>
+                                            <th class="p-3">Acciones</th>
+                                            <th class="p-3">Tiempo</th>
+                                            <th class="p-3">Recursos</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-100">
+                                        ${plan.length > 0 ? plan.map(row => `
+                                            <tr>
+                                                <td class="p-3 font-semibold text-slate-700">${row.cambio || '-'}</td>
+                                                <td class="p-3 text-slate-600">${row.acciones || '-'}</td>
+                                                <td class="p-3 text-slate-600">${row.tiempo || '-'}</td>
+                                                <td class="p-3 text-slate-600">${row.recursos || '-'}</td>
+                                            </tr>
+                                        `).join('') : `<tr><td colspan="4" class="p-4 text-center text-slate-400 italic">No se registraron cambios en el plan estratégico.</td></tr>`}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- IV. Retroalimentación Descriptiva (UTP) -->
+                        <div>
+                            <div class="flex items-center gap-3 mb-4">
+                                <span class="text-xs font-black uppercase tracking-wider text-indigo-600">IV. RETROALIMENTACIÓN DESCRIPTIVA</span>
                                 <div class="h-[1px] bg-slate-200 flex-1"></div>
                             </div>
                             <div class="space-y-3">
@@ -224,34 +255,68 @@
                                 </div>
                             </div>
                         </div>
+                    `;
+                } else if (isPIE) {
+                    // FORMATO PIE (Sin datos sensibles, solo retroalimentación)
+                    const obsCoordinadora = com.obs_coordinadora || '';
+                    const obsEspecialista = com.obs_especialista || '';
+                    const destacaCoordinadora = com.destaca_coordinadora || '';
+                    const destacaEspecialista = com.destaca_especialista || '';
+                    const mejorarCoordinadora = com.mejorar_coordinadora || '';
+                    const mejorarEspecialista = com.mejorar_especialista || '';
 
-                        <!-- IV. Plan Estratégico de Cambios (UTP) -->
+                    sectionsHtml = `
+                        <!-- IV. Observaciones -->
                         <div>
                             <div class="flex items-center gap-3 mb-4">
-                                <span class="text-xs font-black uppercase tracking-wider text-indigo-600">IV. PLAN ESTRATÉGICO DE CAMBIOS</span>
+                                <span class="text-xs font-black uppercase tracking-wider text-indigo-600">IV. OBSERVACIONES</span>
                                 <div class="h-[1px] bg-slate-200 flex-1"></div>
                             </div>
-                            <div class="overflow-x-auto border border-slate-200 rounded-xl bg-white">
-                                <table class="w-full text-xs text-left">
-                                    <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase font-black text-[9px]">
-                                        <tr>
-                                            <th class="p-3">Cambio acordado</th>
-                                            <th class="p-3">Acciones</th>
-                                            <th class="p-3">Tiempo</th>
-                                            <th class="p-3">Recursos</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y divide-slate-100">
-                                        ${plan.length > 0 ? plan.map(row => `
-                                            <tr>
-                                                <td class="p-3 font-semibold text-slate-700">${row.cambio || '-'}</td>
-                                                <td class="p-3 text-slate-600">${row.acciones || '-'}</td>
-                                                <td class="p-3 text-slate-600">${row.tiempo || '-'}</td>
-                                                <td class="p-3 text-slate-600">${row.recursos || '-'}</td>
-                                            </tr>
-                                        `).join('') : `<tr><td colspan="4" class="p-4 text-center text-slate-400 italic">No se registraron cambios en el plan estratégico.</td></tr>`}
-                                    </tbody>
-                                </table>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="bg-white border border-slate-200 p-4 rounded-xl">
+                                    <span class="block text-[9px] font-bold text-indigo-600 uppercase mb-1">Coordinadora PIE</span>
+                                    <p class="text-slate-700 text-xs leading-relaxed whitespace-pre-wrap">${obsCoordinadora || 'Sin comentarios.'}</p>
+                                </div>
+                                <div class="bg-white border border-slate-200 p-4 rounded-xl">
+                                    <span class="block text-[9px] font-bold text-indigo-600 uppercase mb-1">Especialista PIE</span>
+                                    <p class="text-slate-700 text-xs leading-relaxed whitespace-pre-wrap">${obsEspecialista || 'Sin comentarios.'}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- V. Destacado -->
+                        <div>
+                            <div class="flex items-center gap-3 mb-4">
+                                <span class="text-xs font-black uppercase tracking-wider text-indigo-600">V. ¿QUÉ SE DESTACA DE LA EXPERIENCIA OBSERVADA?</span>
+                                <div class="h-[1px] bg-slate-200 flex-1"></div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="bg-white border border-slate-200 p-4 rounded-xl">
+                                    <span class="block text-[9px] font-bold text-indigo-600 uppercase mb-1">Coordinadora PIE</span>
+                                    <p class="text-slate-700 text-xs leading-relaxed whitespace-pre-wrap">${destacaCoordinadora || 'Sin comentarios.'}</p>
+                                </div>
+                                <div class="bg-white border border-slate-200 p-4 rounded-xl">
+                                    <span class="block text-[9px] font-bold text-indigo-600 uppercase mb-1">Especialista PIE</span>
+                                    <p class="text-slate-700 text-xs leading-relaxed whitespace-pre-wrap">${destacaEspecialista || 'Sin comentarios.'}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- VI. Mejorar -->
+                        <div>
+                            <div class="flex items-center gap-3 mb-4">
+                                <span class="text-xs font-black uppercase tracking-wider text-indigo-600">VI. ¿QUÉ SE PODRÍA MEJORAR DE LO OBSERVADO?</span>
+                                <div class="h-[1px] bg-slate-200 flex-1"></div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="bg-white border border-slate-200 p-4 rounded-xl">
+                                    <span class="block text-[9px] font-bold text-indigo-600 uppercase mb-1">Coordinadora PIE</span>
+                                    <p class="text-slate-700 text-xs leading-relaxed whitespace-pre-wrap">${mejorarCoordinadora || 'Sin comentarios.'}</p>
+                                </div>
+                                <div class="bg-white border border-slate-200 p-4 rounded-xl">
+                                    <span class="block text-[9px] font-bold text-indigo-600 uppercase mb-1">Especialista PIE</span>
+                                    <p class="text-slate-700 text-xs leading-relaxed whitespace-pre-wrap">${mejorarEspecialista || 'Sin comentarios.'}</p>
+                                </div>
                             </div>
                         </div>
                     `;

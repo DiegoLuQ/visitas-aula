@@ -13,6 +13,9 @@ services:
     environment:
       - DATABASE_URL=${DOCKER_DATABASE_URL}
       - SECRET_KEY=${SECRET_KEY}
+    # Persiste los PDF de visitas históricas entre reconstrucciones del contenedor.
+    volumes:
+      - pdf_visitas_data:/app/uploads
     restart: always
 
   frontend:
@@ -31,3 +34,6 @@ services:
 networks:
   base_red_pme:
     external: true
+
+volumes:
+  pdf_visitas_data:

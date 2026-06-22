@@ -18,6 +18,13 @@ function esFormatoOrientacion(plantilla) {
     return plantilla.id == 2; // legacy: plantillas sin formato definido
 }
 
+// ¿La pauta usa el formato PIE?
+function esFormatoPie(plantilla) {
+    if (!plantilla) return false;
+    const f = (plantilla.formato || '').toUpperCase();
+    return f === 'PIE';
+}
+
 // La pauta de Liderazgo (id 1) pertenece al módulo de Liderazgo, no a Visitas.
 const LIDERAZGO_PLANTILLA_ID = 1;
 // La pauta UTP usa su propio módulo (utp_pauta.js), fijado a este id.
@@ -150,9 +157,9 @@ async function refreshVisitasDashboardData(colegioId, year) {
             return '';
         };
 
-        // Una visita es cualquier pauta con formato de visita (UTP / ORIENTACION),
+        // Una visita es cualquier pauta con formato de visita (UTP / ORIENTACION / PIE),
         // sin importar su plantilla_id concreto (pueden ser copias por colegio).
-        const VISITA_FORMATOS = ['UTP', 'ORIENTACION'];
+        const VISITA_FORMATOS = ['UTP', 'ORIENTACION', 'PIE'];
         const esVisita = (v) => {
             const fmt = (v.plantilla_formato || '').toUpperCase();
             if (fmt) return VISITA_FORMATOS.includes(fmt);
@@ -366,8 +373,17 @@ export async function initVisitaForm(docenteId = null, templateId = 2, evaluacio
             if (existingData.comentarios) {
                 try {
                     const com = JSON.parse(existingData.comentarios);
-                    if (document.getElementById('visitaObservaciones')) document.getElementById('visitaObservaciones').value = com.observaciones || '';
-                    if (document.getElementById('visitaRetroalimentacion')) document.getElementById('visitaRetroalimentacion').value = com.retroalimentacion || '';
+                    if (esFormatoPie(plantilla)) {
+                        if (document.getElementById('pieObsCoordinadora')) document.getElementById('pieObsCoordinadora').value = com.obs_coordinadora || '';
+                        if (document.getElementById('pieObsEspecialista')) document.getElementById('pieObsEspecialista').value = com.obs_especialista || '';
+                        if (document.getElementById('pieDestacaCoordinadora')) document.getElementById('pieDestacaCoordinadora').value = com.destaca_coordinadora || '';
+                        if (document.getElementById('pieDestacaEspecialista')) document.getElementById('pieDestacaEspecialista').value = com.destaca_especialista || '';
+                        if (document.getElementById('pieMejorarCoordinadora')) document.getElementById('pieMejorarCoordinadora').value = com.mejorar_coordinadora || '';
+                        if (document.getElementById('pieMejorarEspecialista')) document.getElementById('pieMejorarEspecialista').value = com.mejorar_especialista || '';
+                    } else {
+                        if (document.getElementById('visitaObservaciones')) document.getElementById('visitaObservaciones').value = com.observaciones || '';
+                        if (document.getElementById('visitaRetroalimentacion')) document.getElementById('visitaRetroalimentacion').value = com.retroalimentacion || '';
+                    }
                 } catch(e) {
                     if (document.getElementById('visitaObservaciones')) document.getElementById('visitaObservaciones').value = existingData.comentarios;
                 }
@@ -430,11 +446,14 @@ function renderVisitaForm(container, colegios, cursos, asignaturas, plantilla, d
     const estadoVisita = existingData?.estado || 'BORRADOR';
     const generalEditable = isCreator && isNew;
     const retroEditable = isCreator && (isNew || ['BORRADOR', 'LISTO_PARA_FIRMA'].includes(estadoVisita));
-    const obsEditable = isCreator && (isNew || (esFormatoOrientacion(plantilla) && ['BORRADOR', 'LISTO_PARA_FIRMA'].includes(estadoVisita)));
+    const obsEditable = isCreator && (isNew || ((esFormatoOrientacion(plantilla) || esFormatoPie(plantilla)) && ['BORRADOR', 'LISTO_PARA_FIRMA'].includes(estadoVisita)));
     const canSave = retroEditable;
     const disabledAttr = generalEditable ? '' : 'disabled';   // datos generales / rúbrica
     const disabledRetro = retroEditable ? '' : 'disabled';    // solo retroalimentación
     const disabledObs = obsEditable ? '' : 'disabled';        // observaciones
+    const readonlyAttr = generalEditable ? '' : 'readonly';
+    const readonlyRetro = retroEditable ? '' : 'readonly';
+    const readonlyObs = obsEditable ? '' : 'readonly';
     const currentColegioId = existingData?.colegio_id || existingData?.docente?.colegio_id;
 
     const html = `
@@ -442,7 +461,14 @@ function renderVisitaForm(container, colegios, cursos, asignaturas, plantilla, d
             <div class="form-header bg-slate-900 text-white p-5 sm:p-6 rounded-t-3xl">
                 <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                     <div class="min-w-0">
-                        <h3 class="text-xl sm:text-2xl font-black">${plantilla.nombre}</h3>
+                        <div class="flex items-center gap-3 flex-wrap">
+                            <h3 class="text-xl sm:text-2xl font-black">${plantilla.nombre}</h3>
+                            ${esFormatoPie(plantilla) ? `
+                                <span id="pie_global_avg_badge" class="bg-indigo-700/50 text-white px-3 py-1 rounded-xl text-xs font-black border border-white/10" style="display: none;">
+                                    Promedio Global: -
+                                </span>
+                            ` : ''}
+                        </div>
                         <p class="text-slate-400 text-sm font-medium">${existingData ? `Modificando registro #${existingData.id}` : 'Nueva observación de aula'}</p>
                     </div>
                     <div class="flex items-center gap-4">
@@ -497,36 +523,80 @@ function renderVisitaForm(container, colegios, cursos, asignaturas, plantilla, d
                 <div class="dimensiones-container space-y-10">
                     ${plantilla.dimensiones.map((dim, dIdx) => `
                         <div class="dimension-section">
-                            <h4 class="text-indigo-900 font-black text-xl mb-6 flex items-center gap-3">
-                                <span class="bg-indigo-100 text-indigo-600 w-8 h-8 rounded-lg flex items-center justify-center text-sm">${dIdx + 1}</span>
-                                ${dim.nombre}
+                            <h4 class="text-indigo-900 font-black text-xl mb-6 flex flex-wrap items-center justify-between gap-3">
+                                <span class="flex items-center gap-3">
+                                    <span class="bg-indigo-100 text-indigo-600 w-8 h-8 rounded-lg flex items-center justify-center text-sm">${dIdx + 1}</span>
+                                    ${dim.nombre}
+                                </span>
+                                ${esFormatoPie(plantilla) ? `
+                                    <span id="dim_avg_badge_${dim.id}" class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-xl text-xs font-black border border-indigo-100" style="display: none;">
+                                        Promedio Dimensión: -
+                                    </span>
+                                ` : ''}
                             </h4>
                             <div class="grid gap-4">
-                                ${dim.subdimensiones.map((sub, sIdx) => `
+                                ${dim.subdimensiones.map((sub, sIdx) => {
+                                    const isPie = esFormatoPie(plantilla);
+                                    const leftWidthClass = isPie ? 'lg:w-2/5' : 'lg:w-3/5';
+                                    const rightWidthClass = isPie ? 'lg:w-3/5' : 'lg:w-2/5';
+                                    
+                                    return `
                                     <div class="bg-white border border-slate-100 rounded-3xl p-6 hover:border-indigo-200 transition-all hover:shadow-lg hover:shadow-indigo-500/5">
                                         <div class="flex flex-col lg:flex-row lg:items-center gap-6">
-                                            <div class="lg:w-3/5">
+                                            <div class="${leftWidthClass}">
                                                 <p class="text-slate-700 font-semibold text-base leading-snug">${sub.descripcion}</p>
+                                                ${isPie ? `
+                                                    <div class="mt-2">
+                                                        <span id="badge_score_${sub.id}" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-400" style="display: none;">
+                                                            Sin evaluar
+                                                        </span>
+                                                    </div>
+                                                ` : ''}
                                             </div>
-                                            <div class="lg:w-2/5 flex p-1 bg-slate-50 rounded-2xl w-full">
-                                                <label class="relative flex-1 cursor-pointer">
-                                                    <input type="radio" name="ind_${sub.id}" value="1" class="peer sr-only" required ${disabledAttr}>
-                                                    <div class="py-3 rounded-xl text-xs font-bold text-slate-400 peer-checked:bg-white peer-checked:text-emerald-600 peer-checked:shadow-sm transition-all flex items-center justify-center">OBSERVADO</div>
-                                                </label>
-                                                <label class="relative flex-1 cursor-pointer">
-                                                    <input type="radio" name="ind_${sub.id}" value="0" class="peer sr-only" ${disabledAttr}>
-                                                    <div class="py-3 rounded-xl text-xs font-bold text-slate-400 peer-checked:bg-white peer-checked:text-rose-600 peer-checked:shadow-sm transition-all flex items-center justify-center">NO OBSERVADO</div>
-                                                </label>
+                                            <div class="${rightWidthClass} flex p-1 bg-slate-50 rounded-2xl w-full">
+                                                ${isPie ? `
+                                                    <!-- Escala PIE: N/O (0), Deficiente (1), Básico (2), Competente (3), Excelente (4) -->
+                                                    ${[
+                                                        {v: 0, n: 'N/O', c: 'peer-checked:text-slate-900'},
+                                                        {v: 1, n: 'Deficiente', c: 'peer-checked:text-rose-600'},
+                                                        {v: 2, n: 'Básico', c: 'peer-checked:text-amber-600'},
+                                                        {v: 3, n: 'Competente', c: 'peer-checked:text-emerald-600'},
+                                                        {v: 4, n: 'Excelente', c: 'peer-checked:text-indigo-600'}
+                                                    ].map(opt => `
+                                                        <label class="relative flex-1 min-w-0 cursor-pointer">
+                                                            <input type="radio" name="ind_${sub.id}" value="${opt.v}" class="peer sr-only" required ${disabledAttr}>
+                                                            <div class="px-1 py-2 rounded-xl text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-tighter leading-tight text-center transition-all peer-checked:bg-white ${opt.c} peer-checked:shadow-md hover:text-indigo-600 flex items-center justify-center">
+                                                                ${opt.n}
+                                                            </div>
+                                                        </label>
+                                                    `).join('')}
+                                                ` : `
+                                                    <label class="relative flex-1 cursor-pointer">
+                                                        <input type="radio" name="ind_${sub.id}" value="1" class="peer sr-only" required ${disabledAttr}>
+                                                        <div class="py-3 rounded-xl text-xs font-bold text-slate-400 peer-checked:bg-white peer-checked:text-emerald-600 peer-checked:shadow-sm transition-all flex items-center justify-center">OBSERVADO</div>
+                                                    </label>
+                                                    <label class="relative flex-1 cursor-pointer">
+                                                        <input type="radio" name="ind_${sub.id}" value="0" class="peer sr-only" ${disabledAttr}>
+                                                        <div class="py-3 rounded-xl text-xs font-bold text-slate-400 peer-checked:bg-white peer-checked:text-rose-600 peer-checked:shadow-sm transition-all flex items-center justify-center">NO OBSERVADO</div>
+                                                    </label>
+                                                `}
                                             </div>
                                         </div>
                                         ${esFormatoOrientacion(plantilla) ? `
                                         <div class="mt-4 border-t border-slate-100 pt-4">
                                             <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2">Estrategia a mejorar</label>
-                                            <textarea name="est_${sub.id}" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none min-h-[60px]" placeholder="Escriba la estrategia acordada para este indicador..." ${disabledAttr}></textarea>
+                                            <textarea name="est_${sub.id}" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none min-h-[60px]" placeholder="Escriba la estrategia acordada para este indicador..." ${readonlyAttr}></textarea>
+                                        </div>
+                                        ` : ''}
+                                        ${esFormatoPie(plantilla) ? `
+                                        <div class="mt-4 border-t border-slate-100 pt-4">
+                                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2">Comentarios por indicador</label>
+                                            <textarea name="est_${sub.id}" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none min-h-[60px]" placeholder="Escriba observaciones o comentarios para este indicador..." ${readonlyAttr}></textarea>
                                         </div>
                                         ` : ''}
                                     </div>
-                                `).join('')}
+                                    `;
+                                }).join('')}
                             </div>
                         </div>
                     `).join('')}
@@ -563,6 +633,64 @@ function renderVisitaForm(container, colegios, cursos, asignaturas, plantilla, d
                 </div>
                 ` : ''}
 
+                ${esFormatoPie(plantilla) ? `
+                <div class="mt-12 pt-10 border-t border-slate-100">
+                    <h4 class="text-2xl font-black text-indigo-900 mb-8 flex items-center gap-3">
+                        <span class="bg-indigo-100 text-indigo-600 w-10 h-10 rounded-xl flex items-center justify-center text-lg"><i class="fas fa-comment-dots"></i></span>
+                        Retroalimentación
+                    </h4>
+                    <div class="space-y-8 bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                        <div>
+                            <h4 class="text-xl font-black text-slate-900 mb-6 flex items-center gap-3">
+                                <i class="fas fa-search text-indigo-600"></i>
+                                IV. Observaciones
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div class="form-group">
+                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-3">Comentarios de Coordinadora PIE</label>
+                                    <textarea id="pieObsCoordinadora" class="w-full bg-white border border-slate-200 rounded-3xl p-5 text-sm focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none min-h-[120px]" placeholder="Escriba comentarios..." ${readonlyObs}></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-3">Comentarios de Especialista PIE</label>
+                                    <textarea id="pieObsEspecialista" class="w-full bg-white border border-slate-200 rounded-3xl p-5 text-sm focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none min-h-[120px]" placeholder="Escriba comentarios..." ${readonlyObs}></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-black text-slate-900 mb-6 flex items-center gap-3">
+                                <i class="fas fa-star text-indigo-600"></i>
+                                V. ¿Qué se destaca de la experiencia observada?
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div class="form-group">
+                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-3">Comentarios de Coordinadora PIE</label>
+                                    <textarea id="pieDestacaCoordinadora" class="w-full bg-white border border-slate-200 rounded-3xl p-5 text-sm focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none min-h-[120px]" placeholder="Escriba comentarios..." ${readonlyRetro}></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-3">Comentarios de Especialista PIE</label>
+                                    <textarea id="pieDestacaEspecialista" class="w-full bg-white border border-slate-200 rounded-3xl p-5 text-sm focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none min-h-[120px]" placeholder="Escriba comentarios..." ${readonlyRetro}></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-black text-slate-900 mb-6 flex items-center gap-3">
+                                <i class="fas fa-arrow-trend-up text-indigo-600"></i>
+                                VI. ¿Qué se podría mejorar de lo observado?
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div class="form-group">
+                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-3">Comentarios de Coordinadora PIE</label>
+                                    <textarea id="pieMejorarCoordinadora" class="w-full bg-white border border-slate-200 rounded-3xl p-5 text-sm focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none min-h-[120px]" placeholder="Escriba comentarios..." ${readonlyRetro}></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-3">Comentarios de Especialista PIE</label>
+                                    <textarea id="pieMejorarEspecialista" class="w-full bg-white border border-slate-200 rounded-3xl p-5 text-sm focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none min-h-[120px]" placeholder="Escriba comentarios..." ${readonlyRetro}></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                ` : `
                 <div class="mt-12 pt-10 border-t border-slate-100">
                     <h4 class="text-xl font-black text-slate-900 mb-6 flex items-center gap-3">
                         <i class="fas fa-comment-alt text-indigo-600"></i>
@@ -571,14 +699,15 @@ function renderVisitaForm(container, colegios, cursos, asignaturas, plantilla, d
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div class="form-group">
                             <label class="block text-xs font-bold text-slate-500 uppercase mb-3">Observaciones (Opcional)</label>
-                            <textarea id="visitaObservaciones" class="w-full bg-slate-50 border-none rounded-3xl p-5 text-sm focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none min-h-[120px]" placeholder="Escriba las observaciones clave..." ${disabledObs}></textarea>
+                            <textarea id="visitaObservaciones" class="w-full bg-slate-50 border-none rounded-3xl p-5 text-sm focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none min-h-[120px]" placeholder="Escriba las observaciones clave..." ${readonlyObs}></textarea>
                         </div>
                         <div class="form-group">
                             <label class="block text-xs font-bold text-slate-500 uppercase mb-3">Retroalimentación (Opcional)</label>
-                            <textarea id="visitaRetroalimentacion" class="w-full bg-slate-50 border-none rounded-3xl p-5 text-sm focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none min-h-[120px]" placeholder="Sugerencias y acuerdos..." ${disabledRetro}></textarea>
+                            <textarea id="visitaRetroalimentacion" class="w-full bg-slate-50 border-none rounded-3xl p-5 text-sm focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none min-h-[120px]" placeholder="Sugerencias y acuerdos..." ${readonlyRetro}></textarea>
                         </div>
                     </div>
                 </div>
+                `}
 
                 <div class="mt-10 sm:mt-12 flex flex-wrap justify-between items-center gap-4 bg-slate-50 p-4 sm:p-6 rounded-3xl">
                     <button type="button" class="text-slate-400 font-bold hover:text-slate-600 transition-colors" onclick="app.navigateTo('visitas-dashboard')">DESCARTAR</button>
@@ -609,6 +738,92 @@ function renderVisitaForm(container, colegios, cursos, asignaturas, plantilla, d
         e.preventDefault();
         window.app.guardarVisita(plantilla.id, existingData?.id);
     };
+
+    if (esFormatoPie(plantilla)) {
+        setTimeout(() => {
+            window.app.actualizarPromediosPie();
+            const formEl = document.getElementById('visitaMainForm');
+            if (formEl) {
+                formEl.addEventListener('change', (e) => {
+                    if (e.target.type === 'radio' && e.target.name.startsWith('ind_')) {
+                        window.app.actualizarPromediosPie();
+                    }
+                });
+            }
+        }, 50);
+    }
+}
+
+/**
+ * Calcula y muestra los promedios e interpretaciones del formato PIE en tiempo real.
+ */
+export function actualizarPromediosPie() {
+    if (!_currentVisitaPlantilla || !esFormatoPie(_currentVisitaPlantilla)) return;
+    
+    const PIE_NIVELES = {
+        0: { texto: 'No Observado (N/O)', bg: 'bg-slate-100', text: 'text-slate-600' },
+        1: { texto: 'Deficiente', bg: 'bg-rose-50 border border-rose-100', text: 'text-rose-600' },
+        2: { texto: 'Básico', bg: 'bg-amber-50 border border-amber-100', text: 'text-amber-600' },
+        3: { texto: 'Competente', bg: 'bg-emerald-50 border border-emerald-100', text: 'text-emerald-600' },
+        4: { texto: 'Excelente', bg: 'bg-indigo-50 border border-indigo-100', text: 'text-indigo-700' }
+    };
+
+    let globalSum = 0;
+    let globalCount = 0;
+
+    _currentVisitaPlantilla.dimensiones.forEach((dim) => {
+        let dimSum = 0;
+        let dimCount = 0;
+
+        dim.subdimensiones.forEach(sub => {
+            const radio = document.querySelector(`input[name="ind_${sub.id}"]:checked`);
+            const val = radio ? parseInt(radio.value) : null;
+            const badge = document.getElementById(`badge_score_${sub.id}`);
+            
+            if (badge) {
+                badge.style.display = 'inline-flex';
+                if (val !== null) {
+                    const info = PIE_NIVELES[val] || { texto: `Puntaje: ${val}`, bg: 'bg-slate-100', text: 'text-slate-800' };
+                    badge.textContent = `${info.texto} (${val})`;
+                    badge.className = `inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${info.bg} ${info.text}`;
+                } else {
+                    badge.textContent = 'Sin evaluar';
+                    badge.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-400';
+                }
+            }
+
+            if (val !== null && val > 0) {
+                dimSum += val;
+                dimCount++;
+            }
+        });
+
+        const dimBadge = document.getElementById(`dim_avg_badge_${dim.id}`);
+        if (dimBadge) {
+            dimBadge.style.display = 'inline-block';
+            if (dimCount > 0) {
+                const dimAvg = dimSum / dimCount;
+                dimBadge.textContent = `Promedio Dimensión: ${dimAvg.toFixed(2)}`;
+                dimBadge.className = 'bg-indigo-50 text-indigo-700 px-3 py-1 rounded-xl text-xs font-black border border-indigo-100';
+                globalSum += dimAvg;
+                globalCount++;
+            } else {
+                dimBadge.textContent = 'Promedio Dimensión: N/A';
+                dimBadge.className = 'bg-slate-50 text-slate-400 px-3 py-1 rounded-xl text-xs font-black border border-slate-200';
+            }
+        }
+    });
+
+    const globalBadge = document.getElementById('pie_global_avg_badge');
+    if (globalBadge) {
+        if (globalCount > 0) {
+            const globalAvg = globalSum / globalCount;
+            globalBadge.style.display = 'inline-block';
+            globalBadge.textContent = `Promedio Global: ${globalAvg.toFixed(2)}`;
+        } else {
+            globalBadge.style.display = 'none';
+        }
+    }
 }
 
 /**
@@ -648,10 +863,54 @@ export async function guardarVisita(plantillaId, evaluacionId = null) {
             };
         });
 
-        const comentarios = JSON.stringify({
-            observaciones: document.getElementById('visitaObservaciones')?.value || '',
-            retroalimentacion: document.getElementById('visitaRetroalimentacion')?.value || ''
-        });
+        let comentarios;
+        let extraPayload = {};
+
+        if (esFormatoPie(_currentVisitaPlantilla)) {
+            comentarios = JSON.stringify({
+                obs_coordinadora: document.getElementById('pieObsCoordinadora')?.value || '',
+                obs_especialista: document.getElementById('pieObsEspecialista')?.value || '',
+                destaca_coordinadora: document.getElementById('pieDestacaCoordinadora')?.value || '',
+                destaca_especialista: document.getElementById('pieDestacaEspecialista')?.value || '',
+                mejorar_coordinadora: document.getElementById('pieMejorarCoordinadora')?.value || '',
+                mejorar_especialista: document.getElementById('pieMejorarEspecialista')?.value || ''
+            });
+
+            // Calcular promedios para PIE (excluyendo N/O que tiene valor 0)
+            let globalSum = 0;
+            let globalCount = 0;
+            const dimAverages = {};
+            
+            _currentVisitaPlantilla.dimensiones.forEach((dim, idx) => {
+                let dimSum = 0;
+                let dimCount = 0;
+                dim.subdimensiones.forEach(sub => {
+                    const val = respuestasMap[sub.id];
+                    // Excluir del cálculo si es N/O (0 o no respondido)
+                    if (val !== undefined && val > 0) {
+                        dimSum += val;
+                        dimCount++;
+                    }
+                });
+                const avg = dimCount > 0 ? parseFloat((dimSum / dimCount).toFixed(2)) : 0;
+                dimAverages[`promedio_dim${idx + 1}`] = avg;
+                if (dimCount > 0) {
+                    globalSum += avg;
+                    globalCount++;
+                }
+            });
+            
+            const globalAvg = globalCount > 0 ? parseFloat((globalSum / globalCount).toFixed(2)) : 0;
+            extraPayload = {
+                ...dimAverages,
+                promedio: globalAvg
+            };
+        } else {
+            comentarios = JSON.stringify({
+                observaciones: document.getElementById('visitaObservaciones')?.value || '',
+                retroalimentacion: document.getElementById('visitaRetroalimentacion')?.value || ''
+            });
+        }
 
         // Estudiantes observados (solo en pautas con formato Orientación/Convivencia)
         const estudiantes_observados = [];
@@ -684,7 +943,8 @@ export async function guardarVisita(plantillaId, evaluacionId = null) {
             // (editar la retroalimentación no debe revertir LISTO_PARA_FIRMA a BORRADOR).
             // El cambio a CERRADA ocurre solo al firmar con token (Finalizar con Firma).
             estado: evaluacionId ? (_currentVisitaEstado || 'BORRADOR') : 'BORRADOR',
-            estudiantes_observados
+            estudiantes_observados,
+            ...extraPayload
         };
 
         mostrarLoading(true, evaluacionId ? 'Actualizando visita...' : 'Guardando visita...');
@@ -808,9 +1068,18 @@ function renderDetalleVisitas() {
         lista.forEach(v => {
             const pName = v.plantilla_nombre || ((v.plantilla_formato || '').toUpperCase() === 'UTP' ? 'Acompañamiento UTP' : 'Acompañamiento Directivo');
             const obsName = v.observador_nombre || 'N/A';
-            const accion = verAbiertas
-                ? `<span class="badge" style="background:#fef3c7; color:#92400e; padding:4px 10px; border-radius:8px; font-size:0.72rem; font-weight:700;">${ESTADO_LABEL[v.estado] || v.estado}</span>`
-                : `<button class="btn btn-primary btn-sm" onclick="window.app.closeModal(); window.app.verDetalleVisita(${v.id}, ${v.plantilla_id}, '${pName.replace(/'/g, "\\'")}', '${(v.plantilla_slug || '').replace(/'/g, "\\'")}')" style="padding: 4px 10px; font-size: 0.75rem; border-radius: 6px;">Ver Visita</button>`;
+            let accion;
+            if (verAbiertas) {
+                accion = `<span class="badge" style="background:#fef3c7; color:#92400e; padding:4px 10px; border-radius:8px; font-size:0.72rem; font-weight:700;">${ESTADO_LABEL[v.estado] || v.estado}</span>`;
+            } else if (v.tiene_pdf) {
+                // Visita histórica subida como PDF: visor + descarga.
+                const tituloPdf = `Visita ${_nombreDocente(_detalleState.docenteId)} · ${formatFecha(v.fecha)}`.replace(/'/g, "\\'");
+                accion = `
+                    <button class="btn btn-primary btn-sm" onclick="window.app.openPdfViewer(${v.id}, '${tituloPdf}')" style="padding: 4px 10px; font-size: 0.75rem; border-radius: 6px;"><i class="fas fa-file-pdf"></i> Ver PDF</button>
+                    <button class="btn btn-sm" onclick="window.app.descargarPdfVisita(${v.id}, 'visita_${v.id}.pdf')" title="Descargar PDF" style="padding: 4px 8px; font-size: 0.75rem; border-radius: 6px; background:#0ea5e9; color:#fff; margin-left:4px;"><i class="fas fa-download"></i></button>`;
+            } else {
+                accion = `<button class="btn btn-primary btn-sm" onclick="window.app.closeModal(); window.app.verDetalleVisita(${v.id}, ${v.plantilla_id}, '${pName.replace(/'/g, "\\'")}', '${(v.plantilla_slug || '').replace(/'/g, "\\'")}')" style="padding: 4px 10px; font-size: 0.75rem; border-radius: 6px;">Ver Visita</button>`;
+            }
             rows += `
                 <tr style="border-bottom: 1px solid #f1f5f9;">
                     <td style="padding: 10px; color: #334155; font-weight: 500; white-space: nowrap;">${formatFecha(v.fecha)}</td>

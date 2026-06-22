@@ -75,3 +75,29 @@ def send_evaluation_email(to_emails, subject, body, body_html=None, pdf_content=
     except Exception as e:
         print(f"Error sending email: {e}")
         return False
+
+
+def send_password_change_email(email, username, new_password, school_type=None):
+    """Envia un correo al usuario notificándole su nueva contraseña."""
+    subject = "Cambio de Contraseña - Sistema de Liderazgo"
+    body = f"Hola {username},\n\nTu contraseña ha sido cambiada exitosamente.\n\nTu nueva contraseña es: {new_password}\n\nPor favor inicia sesión con tu nueva credencial.\n\nSaludos,\nSistema de Liderazgo"
+    body_html = f"""
+    <html>
+        <body style="font-family: sans-serif; color: #333;">
+            <h2 style="color: #4f46e5;">Cambio de Contraseña Exitoso</h2>
+            <p>Hola <strong>{username}</strong>,</p>
+            <p>Se ha procesado una solicitud de cambio de contraseña para tu cuenta en el <strong>Sistema de Liderazgo</strong>.</p>
+            <div style="background-color: #f3f4f6; border-left: 4px solid #4f46e5; padding: 15px; margin: 20px 0; border-radius: 4px;">
+                <p style="margin: 0 0 8px 0;"><strong>Tus nuevas credenciales son:</strong></p>
+                <p style="margin: 0;">Usuario: <code>{username}</code></p>
+                <p style="margin: 0;">Contraseña: <code>{new_password}</code></p>
+            </div>
+            <p>Te recomendamos iniciar sesión y verificar tu nueva contraseña.</p>
+            <p style="color: #6b7280; font-size: 0.85em; margin-top: 30px; border-top: 1px solid #e5e7eb; padding-top: 10px;">
+                Este es un correo automático, por favor no respondas a este mensaje.
+            </p>
+        </body>
+    </html>
+    """
+    return send_evaluation_email([email], subject, body, body_html=body_html, school_type=school_type)
+
