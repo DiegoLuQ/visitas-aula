@@ -33,7 +33,11 @@ export async function loadVisitasHistorial() {
 
         // 4. Guardar en estado local del módulo para filtros rápidos
         state.allVisitasHistorial = visitas;
-        
+
+        // 5. Poblar filtros dinámicos (visitante, estado y tipo de acompañamiento)
+        //    a partir de los datos realmente presentes en el historial.
+        poblarFiltrosDinamicos(visitas);
+
         renderTable(visitas);
         setupFilters();
         mostrarLoading(false);
@@ -167,9 +171,64 @@ function renderCards(visitas) {
     }).join('');
 }
 
+// Etiquetas legibles para los estados del ciclo de vida de la evaluación.
+const ESTADO_LABELS = {
+    BORRADOR: 'Borrador',
+    LISTO_PARA_FIRMA: 'Listo para firma',
+    FIRMADA_DOCENTE: 'Firmada',
+    FIRMADA: 'Firmada',
+    CERRADA: 'Cerrada',
+};
+
+// Rellena los selects de Visitante, Estado y Tipo de Acompañamiento con los
+// valores únicos presentes en el historial cargado.
+function poblarFiltrosDinamicos(visitas) {
+    const fVis = document.getElementById('filterVisitaVisitante');
+    const fEst = document.getElementById('filterVisitaEstado');
+    const fTipo = document.getElementById('filterVisitaTipo');
+
+    // Visitante (observador): value = id, label = nombre
+    if (fVis) {
+        const map = new Map();
+        visitas.forEach(v => {
+            if (v.observador_id != null && !map.has(v.observador_id)) {
+                map.set(v.observador_id, v.observador_nombre || `Usuario ${v.observador_id}`);
+            }
+        });
+        fVis.innerHTML = '<option value="">Todos los Visitantes</option>' +
+            [...map.entries()]
+                .sort((a, b) => a[1].localeCompare(b[1]))
+                .map(([id, nombre]) => `<option value="${id}">${nombre}</option>`).join('');
+    }
+
+    // Estado
+    if (fEst) {
+        const estados = [...new Set(visitas.map(v => v.estado || 'ABIERTA'))];
+        fEst.innerHTML = '<option value="">Todos los Estados</option>' +
+            estados.sort().map(e => `<option value="${e}">${ESTADO_LABELS[e] || e}</option>`).join('');
+    }
+
+    // Tipo de acompañamiento (pauta/plantilla): value = plantilla_id, label = nombre
+    if (fTipo) {
+        const map = new Map();
+        visitas.forEach(v => {
+            if (v.plantilla_id != null && !map.has(v.plantilla_id)) {
+                map.set(v.plantilla_id, v.plantilla_nombre || 'Visita Aula');
+            }
+        });
+        fTipo.innerHTML = '<option value="">Todos los Acompañamientos</option>' +
+            [...map.entries()]
+                .sort((a, b) => a[1].localeCompare(b[1]))
+                .map(([id, nombre]) => `<option value="${id}">${nombre}</option>`).join('');
+    }
+}
+
 function setupFilters() {
     const fCol = document.getElementById('filterVisitaColegio');
     const fDoc = document.getElementById('filterVisitaDocente');
+    const fVis = document.getElementById('filterVisitaVisitante');
+    const fEst = document.getElementById('filterVisitaEstado');
+    const fTipo = document.getElementById('filterVisitaTipo');
     const fDesde = document.getElementById('filterVisitaDesde');
     const fHasta = document.getElementById('filterVisitaHasta');
 
@@ -177,6 +236,9 @@ function setupFilters() {
 
     if (fCol) fCol.onchange = run;
     if (fDoc) fDoc.oninput = run;
+    if (fVis) fVis.onchange = run;
+    if (fEst) fEst.onchange = run;
+    if (fTipo) fTipo.onchange = run;
     if (fDesde) fDesde.onchange = run;
     if (fHasta) fHasta.onchange = run;
 }
@@ -184,16 +246,22 @@ function setupFilters() {
 export function aplicarFiltros() {
     const colId = document.getElementById('filterVisitaColegio')?.value;
     const search = document.getElementById('filterVisitaDocente')?.value.toLowerCase();
+    const visitanteId = document.getElementById('filterVisitaVisitante')?.value;
+    const estado = document.getElementById('filterVisitaEstado')?.value;
+    const tipoId = document.getElementById('filterVisitaTipo')?.value;
     const desde = document.getElementById('filterVisitaDesde')?.value;
     const hasta = document.getElementById('filterVisitaHasta')?.value;
 
     let data = state.allVisitasHistorial || [];
 
     if (colId) data = data.filter(v => v.colegio_id == colId);
-    if (search) data = data.filter(v => 
-        (v.docente_nombre || '').toLowerCase().includes(search) || 
+    if (search) data = data.filter(v =>
+        (v.docente_nombre || '').toLowerCase().includes(search) ||
         (v.observador_nombre || '').toLowerCase().includes(search)
     );
+    if (visitanteId) data = data.filter(v => v.observador_id == visitanteId);
+    if (estado) data = data.filter(v => (v.estado || 'ABIERTA') === estado);
+    if (tipoId) data = data.filter(v => v.plantilla_id == tipoId);
     if (desde) data = data.filter(v => v.fecha >= desde);
     if (hasta) data = data.filter(v => v.fecha <= hasta);
 
@@ -201,7 +269,7 @@ export function aplicarFiltros() {
 }
 
 export function limpiarFiltros() {
-    ['filterVisitaColegio', 'filterVisitaDocente', 'filterVisitaDesde', 'filterVisitaHasta'].forEach(id => {
+    ['filterVisitaColegio', 'filterVisitaDocente', 'filterVisitaVisitante', 'filterVisitaEstado', 'filterVisitaTipo', 'filterVisitaDesde', 'filterVisitaHasta'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = '';
     });
