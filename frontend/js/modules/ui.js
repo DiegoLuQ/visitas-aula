@@ -46,6 +46,7 @@ export async function showModal(type, data = null) {
                 <div class="form-group"><label>RUT * (Formato: 12345678-9)</label><input type="text" id="modalRut" value="${data?.rut || ''}" placeholder="12345678-9" required></div>
                 <div class="form-group"><label>Email *</label><input type="email" id="modalEmail" value="${data?.email || ''}" required></div>
                 <div class="form-group"><label>Colegio *</label><select id="modalColegio" class="form-select" required><option value="">Cargando...</option></select></div>
+                <div class="form-group"><label>Tipo de Funcionario</label><select id="modalTipoFuncionario" class="form-select"><option value="">Cargando...</option></select></div>
                 <div class="modal-actions">
                     <button class="btn btn-primary" onclick="window.app.saveDocente(${data?.id || 'null'})">Guardar</button>
                     <button class="btn btn-secondary" onclick="window.app.closeModal()">Cancelar</button>
@@ -79,7 +80,10 @@ export async function showModal(type, data = null) {
         modalBody.innerHTML = bodyHtml;
         document.getElementById('modalOverlay').classList.add('active');
         
-        if (type === 'docente') await loadColegiosForModal(data?.colegio_id);
+        if (type === 'docente') {
+            await loadColegiosForModal(data?.colegio_id);
+            await loadTiposFuncionarioForModal(data?.id_tipo_funcionario);
+        }
         if (type === 'curso') await loadNivelesForModal(data?.nivel_id);
     }
 }
@@ -95,6 +99,22 @@ async function loadColegiosForModal(selectedId = null) {
             opt.value = c.id;
             opt.textContent = c.nombre;
             if (selectedId && c.id == selectedId) opt.selected = true;
+            select.appendChild(opt);
+        });
+    } catch (error) { console.error(error); }
+}
+
+async function loadTiposFuncionarioForModal(selectedId = null) {
+    const select = document.getElementById('modalTipoFuncionario');
+    if (!select) return;
+    try {
+        const tipos = await api.docentes.getTiposFuncionario();
+        select.innerHTML = '<option value="">Sin especificar</option>';
+        tipos.forEach(t => {
+            const opt = document.createElement('option');
+            opt.value = t.id;
+            opt.textContent = t.nombre;
+            if (selectedId && t.id == selectedId) opt.selected = true;
             select.appendChild(opt);
         });
     } catch (error) { console.error(error); }

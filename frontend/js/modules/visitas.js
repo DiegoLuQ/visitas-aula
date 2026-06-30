@@ -9,6 +9,75 @@ let _visitaPlantillas = []; // pautas de visita disponibles para el usuario (fil
 let _currentVisitaPlantilla = null; // pauta actualmente cargada en el formulario
 let _currentVisitaEstado = null; // estado de la visita en edición (null = nueva)
 let _liderazgoEvalsByDocente = {}; // { docenteId: [evaluaciones de liderazgo] }
+let _promLiderazgoByDocente = {}; // { docenteId: { sum, count } } para el badge de Liderazgo
+
+// Badge con el promedio de Liderazgo del docente (usado en tablas de Visitas).
+function getLidBadge(docenteId) {
+    const data = _promLiderazgoByDocente[docenteId];
+    if (data && data.count > 0) {
+        const avg = (data.sum / data.count).toFixed(2);
+        const score = parseFloat(avg);
+
+        let bgColor = '#eff6ff';
+        let textColor = '#1e40af';
+        let borderColor = '#bfdbfe';
+
+        if (score < 4.0) {
+            bgColor = '#fef2f2'; // Rojo (Insuficiente)
+            textColor = '#991b1b';
+            borderColor = '#fecaca';
+        } else if (score < 5.5) {
+            bgColor = '#fffbeb'; // Amarillo (Suficiente/Bueno)
+            textColor = '#92400e';
+            borderColor = '#fde68a';
+        } else {
+            bgColor = '#f0fdf4'; // Verde (Excelente)
+            textColor = '#166534';
+            borderColor = '#bbf7d0';
+        }
+
+        return `<span class="badge" title="Promedio Plantilla Liderazgo" style="background: ${bgColor}; color: ${textColor}; font-size: 0.7rem; margin-left: 8px; border: 1px solid ${borderColor}; font-weight: 700;">Lid: ${avg}</span>`;
+    }
+    return '';
+}
+
+// Renderiza la tabla "Docentes Visitados" a partir de una lista [{docente, visitas}].
+function renderDocentesVisitados(lista) {
+    const tbodyVis = document.getElementById('visitasRealizadasBody');
+    if (!tbodyVis) return;
+    tbodyVis.innerHTML = (lista && lista.length > 0)
+        ? lista.map(dv => {
+            const cantVisitas = dv.visitas.length;
+            const ultimaFecha = dv.visitas[0].fecha;
+            return `
+            <tr>
+                <td data-label="Docente" style="font-weight:600; color: #334155;">
+                    ${dv.docente.nombre}
+                    ${getLidBadge(dv.docente.id)}
+                </td>
+                <td data-label="N° Visitas">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="badge" style="background: #e0f2fe; color: #0284c7; font-size: 0.8rem; padding: 4px 10px; font-weight: 700;">${cantVisitas}</span>
+                        <button class="btn btn-outline-secondary" onclick="window.app.showModalDetalleVisitasDocente(${dv.docente.id})" title="Ver detalles de visitas" style="padding: 3px 6px; font-size: 0.75rem; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; border-color: #cbd5e1; cursor: pointer; background: #f8fafc; color: #475569; border: 1px solid #cbd5e1; height: 26px;">
+                            <svg fill="currentColor" viewBox="0 0 20 20" style="width: 14px; height: 14px;"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"></path><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"></path></svg>
+                        </button>
+                    </div>
+                </td>
+                <td data-label="Última" style="color:#475569; font-weight: 500;">${formatFecha(ultimaFecha)}</td>
+            </tr>
+            `;
+        }).join('')
+        : '<tr><td colspan="3" class="text-center" style="color:#94a3b8; padding:20px;">No se encontraron docentes con ese criterio</td></tr>';
+}
+
+// Filtra la tabla de visitados por nombre del docente (input en el encabezado).
+export function filtrarDocentesVisitados(termino) {
+    const q = (termino || '').toLowerCase().trim();
+    const lista = q
+        ? _docentesVisitados.filter(dv => (dv.docente.nombre || '').toLowerCase().includes(q))
+        : _docentesVisitados;
+    renderDocentesVisitados(lista);
+}
 
 // ¿La pauta usa el formato Orientación/Convivencia? (incluye fallback al id 2 legacy)
 function esFormatoOrientacion(plantilla) {
@@ -23,6 +92,107 @@ function esFormatoPie(plantilla) {
     if (!plantilla) return false;
     const f = (plantilla.formato || '').toUpperCase();
     return f === 'PIE';
+}
+
+// ---------------------------------------------------------------------------
+// Escala de puntaje guiada por `config_puntuacion` (no por formato).
+// Permite crear nuevas pautas con cualquier escala sin tocar este módulo.
+// ---------------------------------------------------------------------------
+
+// Colores permitidos → clases Tailwind LITERALES (no construir dinámicamente:
+// el purge de Tailwind elimina clases generadas por interpolación).
+const ESCALA_COLOR_CLASSES = {
+    slate: 'peer-checked:text-slate-900',
+    rose: 'peer-checked:text-rose-600',
+    amber: 'peer-checked:text-amber-600',
+    emerald: 'peer-checked:text-emerald-600',
+    indigo: 'peer-checked:text-indigo-600',
+};
+const ESCALA_BADGE_CLASSES = {
+    slate: { bg: 'bg-slate-100', text: 'text-slate-600' },
+    rose: { bg: 'bg-rose-50 border border-rose-100', text: 'text-rose-600' },
+    amber: { bg: 'bg-amber-50 border border-amber-100', text: 'text-amber-600' },
+    emerald: { bg: 'bg-emerald-50 border border-emerald-100', text: 'text-emerald-600' },
+    indigo: { bg: 'bg-indigo-50 border border-indigo-100', text: 'text-indigo-700' },
+};
+// Escala PIE por defecto (fallback para plantillas PIE legacy sin config_puntuacion).
+const PIE_NIVELES_DEFAULT = [
+    { valor: 0, nombre: 'N/O', color: 'slate' },
+    { valor: 1, nombre: 'Deficiente', color: 'rose' },
+    { valor: 2, nombre: 'Básico', color: 'amber' },
+    { valor: 3, nombre: 'Competente', color: 'emerald' },
+    { valor: 4, nombre: 'Excelente', color: 'indigo' },
+];
+
+/**
+ * Interpreta `config_puntuacion` y devuelve la escala normalizada.
+ * - JSON con `niveles[]`  → escala numérica (PIE, Singapur, etc.).
+ * - "observado" / vacío   → escala binaria Observado(1)/No observado(0).
+ * - formato PIE sin config → fallback a la escala PIE clásica.
+ */
+function parseEscala(plantilla) {
+    const fmt = (plantilla?.formato || '').toUpperCase();
+    const raw = plantilla?.config_puntuacion;
+    let cfg = null;
+    if (raw && typeof raw === 'string' && raw.trim().startsWith('{')) {
+        try { cfg = JSON.parse(raw); } catch { cfg = null; }
+    }
+    if (cfg && Array.isArray(cfg.niveles) && cfg.niveles.length) {
+        return {
+            tipo: 'escala',
+            niveles: cfg.niveles,
+            noObservado: cfg.opcion_no_observado || null,
+            textoIndicador: cfg.texto_por_indicador || null,
+        };
+    }
+    if (fmt === 'PIE') {
+        return {
+            tipo: 'escala',
+            niveles: PIE_NIVELES_DEFAULT,
+            noObservado: { valor: 0, excluir_del_calculo: true },
+            textoIndicador: { mostrar: true, etiqueta: 'Comentarios por indicador' },
+        };
+    }
+    return {
+        tipo: 'binaria',
+        niveles: [
+            { valor: 1, nombre: 'OBSERVADO', color: 'emerald' },
+            { valor: 0, nombre: 'NO OBSERVADO', color: 'rose' },
+        ],
+        noObservado: null,
+        textoIndicador: null,
+    };
+}
+
+// ¿La pauta usa una escala numérica (>2 niveles con promedio)? Incluye PIE.
+function esEscalaNumerica(plantilla) {
+    return parseEscala(plantilla).tipo === 'escala';
+}
+
+// ¿Se debe excluir este valor del cálculo de promedio? (p. ej. "No observado").
+function esValorExcluido(esc, val) {
+    const no = esc.noObservado;
+    if (!no) return false;
+    const excluir = no.excluir_del_calculo !== false; // por defecto excluye
+    return excluir && val === (no.valor ?? 0);
+}
+
+/**
+ * Configuración del textarea por indicador (Evidencia / Estrategia / Comentarios).
+ * Preserva el comportamiento de ORIENTACION y PIE; lo demás se guía por config.
+ */
+function getTextoPorIndicador(plantilla) {
+    if (esFormatoOrientacion(plantilla)) {
+        return { mostrar: true, etiqueta: 'Estrategia a mejorar', placeholder: 'Escriba la estrategia acordada para este indicador...' };
+    }
+    if (esFormatoPie(plantilla)) {
+        return { mostrar: true, etiqueta: 'Comentarios por indicador', placeholder: 'Escriba observaciones o comentarios para este indicador...' };
+    }
+    const ti = parseEscala(plantilla).textoIndicador;
+    if (ti && ti.mostrar) {
+        return { mostrar: true, etiqueta: ti.etiqueta || 'Comentarios', placeholder: ti.placeholder || 'Escriba el detalle para este indicador...' };
+    }
+    return { mostrar: false };
 }
 
 // La pauta de Liderazgo (id 1) pertenece al módulo de Liderazgo, no a Visitas.
@@ -55,9 +225,17 @@ export async function loadVisitasDashboard() {
     const filterContainer = document.getElementById('visitasDashboardFilter');
     const colegioSelect = document.getElementById('visitaDashColegio');
 
+    // Colegios asignados al usuario (puede ser uno: "1" o varios: "1,2"). Vacío = admin/acceso total.
+    const misColegios = String(user?.colegio_id || '')
+        .split(',').map(s => s.trim()).filter(s => /^\d+$/.test(s));
+
     if (filterContainer && !_dashFilterInitialized) {
         filterContainer.style.display = 'block';
-        const colegios = await api.colegios.getAll();
+        let colegios = await api.colegios.getAll();
+        // Roles con colegio(s) asignados solo pueden elegir entre los suyos.
+        if (misColegios.length) {
+            colegios = colegios.filter(c => misColegios.includes(String(c.id)));
+        }
         colegioSelect.innerHTML = '<option value="">-- Seleccione un Establecimiento --</option>' +
             colegios.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
         colegioSelect.onchange = () => refreshVisitasDashboard();
@@ -65,15 +243,19 @@ export async function loadVisitasDashboard() {
     }
 
     if (colegioSelect) {
-        if (user?.colegio_id) {
-            colegioSelect.value = user.colegio_id;
+        if (misColegios.length === 1) {
+            // Un solo colegio: se fija y se bloquea el selector.
+            colegioSelect.value = misColegios[0];
             colegioSelect.disabled = true;
         } else {
+            // Admin o director multi-colegio: puede elegir el establecimiento.
             colegioSelect.disabled = false;
         }
     }
 
-    const targetColegioId = user?.colegio_id || colegioSelect?.value || null;
+    const targetColegioId = (misColegios.length === 1)
+        ? misColegios[0]
+        : (colegioSelect?.value || null);
 
     if (!targetColegioId) {
         resetDashboardUI('Seleccione un establecimiento para ver los datos');
@@ -87,7 +269,11 @@ async function refreshVisitasDashboard() {
     const user = state.currentUser;
     const currentYear = new Date().getFullYear();
     const colegioSelect = document.getElementById('visitaDashColegio');
-    const targetColegioId = user?.colegio_id || colegioSelect?.value || null;
+    const misColegios = String(user?.colegio_id || '')
+        .split(',').map(s => s.trim()).filter(s => /^\d+$/.test(s));
+    const targetColegioId = (misColegios.length === 1)
+        ? misColegios[0]
+        : (colegioSelect?.value || null);
 
     if (!targetColegioId) {
         resetDashboardUI('Seleccione un establecimiento para ver los datos');
@@ -107,7 +293,7 @@ async function refreshVisitasDashboardData(colegioId, year) {
         const allVisitas = await api.evaluaciones.getAll();
         
         // Calcular promedios de liderazgo del año actual para cada docente
-        const promLiderazgoByDocente = {};
+        _promLiderazgoByDocente = {};
         _liderazgoEvalsByDocente = {};
         const liderazgoEvals = allVisitas.filter(v => {
             const matchPlantilla = (v.plantilla_id == 1);
@@ -120,46 +306,17 @@ async function refreshVisitasDashboardData(colegioId, year) {
             }
             _liderazgoEvalsByDocente[v.docente_id].push(v);
             if (typeof v.promedio === 'number') {
-                if (!promLiderazgoByDocente[v.docente_id]) {
-                    promLiderazgoByDocente[v.docente_id] = { sum: 0, count: 0 };
+                if (!_promLiderazgoByDocente[v.docente_id]) {
+                    _promLiderazgoByDocente[v.docente_id] = { sum: 0, count: 0 };
                 }
-                promLiderazgoByDocente[v.docente_id].sum += v.promedio;
-                promLiderazgoByDocente[v.docente_id].count += 1;
+                _promLiderazgoByDocente[v.docente_id].sum += v.promedio;
+                _promLiderazgoByDocente[v.docente_id].count += 1;
             }
         });
 
-        const getLidBadge = (docenteId) => {
-            const data = promLiderazgoByDocente[docenteId];
-            if (data && data.count > 0) {
-                const avg = (data.sum / data.count).toFixed(2);
-                const score = parseFloat(avg);
-                
-                let bgColor = '#eff6ff';
-                let textColor = '#1e40af';
-                let borderColor = '#bfdbfe';
-
-                if (score < 4.0) {
-                    bgColor = '#fef2f2'; // Rojo (Insuficiente)
-                    textColor = '#991b1b';
-                    borderColor = '#fecaca';
-                } else if (score < 5.5) {
-                    bgColor = '#fffbeb'; // Amarillo (Suficiente/Bueno)
-                    textColor = '#92400e';
-                    borderColor = '#fde68a';
-                } else {
-                    bgColor = '#f0fdf4'; // Verde (Excelente)
-                    textColor = '#166534';
-                    borderColor = '#bbf7d0';
-                }
-
-                return `<span class="badge" title="Promedio Plantilla Liderazgo" style="background: ${bgColor}; color: ${textColor}; font-size: 0.7rem; margin-left: 8px; border: 1px solid ${borderColor}; font-weight: 700;">Lid: ${avg}</span>`;
-            }
-            return '';
-        };
-
-        // Una visita es cualquier pauta con formato de visita (UTP / ORIENTACION / PIE),
+        // Una visita es cualquier pauta con formato de visita (UTP / ORIENTACION / PIE / ESCALA),
         // sin importar su plantilla_id concreto (pueden ser copias por colegio).
-        const VISITA_FORMATOS = ['UTP', 'ORIENTACION', 'PIE'];
+        const VISITA_FORMATOS = ['UTP', 'ORIENTACION', 'PIE', 'ESCALA'];
         const esVisita = (v) => {
             const fmt = (v.plantilla_formato || '').toUpperCase();
             if (fmt) return VISITA_FORMATOS.includes(fmt);
@@ -232,32 +389,13 @@ async function refreshVisitasDashboardData(colegioId, year) {
         }
 
         // Tabla VISITADOS
-        const tbodyVis = document.getElementById('visitasRealizadasBody');
-        if (tbodyVis) {
-            tbodyVis.innerHTML = docentesVisitados.length > 0
-                ? docentesVisitados.map(dv => {
-                    const cantVisitas = dv.visitas.length;
-                    const ultimaFecha = dv.visitas[0].fecha;
-
-                    return `
-                    <tr>
-                        <td data-label="Docente" style="font-weight:600; color: #334155;">
-                            ${dv.docente.nombre}
-                            ${getLidBadge(dv.docente.id)}
-                        </td>
-                        <td data-label="N° Visitas">
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <span class="badge" style="background: #e0f2fe; color: #0284c7; font-size: 0.8rem; padding: 4px 10px; font-weight: 700;">${cantVisitas}</span>
-                                <button class="btn btn-outline-secondary" onclick="window.app.showModalDetalleVisitasDocente(${dv.docente.id})" title="Ver detalles de visitas" style="padding: 3px 6px; font-size: 0.75rem; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; border-color: #cbd5e1; cursor: pointer; background: #f8fafc; color: #475569; border: 1px solid #cbd5e1; height: 26px;">
-                                    <svg fill="currentColor" viewBox="0 0 20 20" style="width: 14px; height: 14px;"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"></path><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"></path></svg>
-                                </button>
-                            </div>
-                        </td>
-                        <td data-label="Última" style="color:#475569; font-weight: 500;">${formatFecha(ultimaFecha)}</td>
-                    </tr>
-                    `;
-                }).join('')
-                : '<tr><td colspan="3" class="text-center" style="color:#94a3b8; padding:20px;">Aún no se han realizado visitas este año</td></tr>';
+        const inputBuscar = document.getElementById('buscarDocenteVisitado');
+        if (inputBuscar) inputBuscar.value = '';
+        if (docentesVisitados.length > 0) {
+            renderDocentesVisitados(docentesVisitados);
+        } else {
+            const tbodyVis = document.getElementById('visitasRealizadasBody');
+            if (tbodyVis) tbodyVis.innerHTML = '<tr><td colspan="3" class="text-center" style="color:#94a3b8; padding:20px;">Aún no se han realizado visitas este año</td></tr>';
         }
 
         mostrarLoading(false);
@@ -370,6 +508,11 @@ export async function initVisitaForm(docenteId = null, templateId = 2, evaluacio
                 if (estInput) estInput.value = r.estrategia || '';
             });
 
+            // Recalcular badges de puntaje por indicador y promedios (global y por
+            // dimensión) tras cargar las respuestas guardadas: marcar los radios por
+            // JS no dispara 'change', así que hay que invocarlo explícitamente.
+            if (esEscalaNumerica(plantilla)) actualizarPromediosPie();
+
             if (existingData.comentarios) {
                 try {
                     const com = JSON.parse(existingData.comentarios);
@@ -463,7 +606,7 @@ function renderVisitaForm(container, colegios, cursos, asignaturas, plantilla, d
                     <div class="min-w-0">
                         <div class="flex items-center gap-3 flex-wrap">
                             <h3 class="text-xl sm:text-2xl font-black">${plantilla.nombre}</h3>
-                            ${esFormatoPie(plantilla) ? `
+                            ${esEscalaNumerica(plantilla) ? `
                                 <span id="pie_global_avg_badge" class="bg-indigo-700/50 text-white px-3 py-1 rounded-xl text-xs font-black border border-white/10" style="display: none;">
                                     Promedio Global: -
                                 </span>
@@ -528,7 +671,7 @@ function renderVisitaForm(container, colegios, cursos, asignaturas, plantilla, d
                                     <span class="bg-indigo-100 text-indigo-600 w-8 h-8 rounded-lg flex items-center justify-center text-sm">${dIdx + 1}</span>
                                     ${dim.nombre}
                                 </span>
-                                ${esFormatoPie(plantilla) ? `
+                                ${esEscalaNumerica(plantilla) ? `
                                     <span id="dim_avg_badge_${dim.id}" class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-xl text-xs font-black border border-indigo-100" style="display: none;">
                                         Promedio Dimensión: -
                                     </span>
@@ -536,16 +679,35 @@ function renderVisitaForm(container, colegios, cursos, asignaturas, plantilla, d
                             </h4>
                             <div class="grid gap-4">
                                 ${dim.subdimensiones.map((sub, sIdx) => {
-                                    const isPie = esFormatoPie(plantilla);
-                                    const leftWidthClass = isPie ? 'lg:w-2/5' : 'lg:w-3/5';
-                                    const rightWidthClass = isPie ? 'lg:w-3/5' : 'lg:w-2/5';
-                                    
+                                    const esc = parseEscala(plantilla);
+                                    const isEscala = esc.tipo === 'escala';
+                                    const textoInd = getTextoPorIndicador(plantilla);
+                                    const leftWidthClass = isEscala ? 'lg:w-2/5' : 'lg:w-3/5';
+                                    const rightWidthClass = isEscala ? 'lg:w-3/5' : 'lg:w-2/5';
+
+                                    // Botones de la escala, generados desde config_puntuacion.niveles.
+                                    const botonesEscala = isEscala
+                                        ? esc.niveles.map(n => `
+                                            <label class="relative flex-1 min-w-0 cursor-pointer">
+                                                <input type="radio" name="ind_${sub.id}" value="${n.valor}" class="peer sr-only" required ${disabledAttr}>
+                                                <div class="px-1 py-2 rounded-xl text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-tighter leading-tight text-center transition-all peer-checked:bg-white ${ESCALA_COLOR_CLASSES[n.color] || 'peer-checked:text-indigo-600'} peer-checked:shadow-md hover:text-indigo-600 flex items-center justify-center">
+                                                    ${n.nombre}
+                                                </div>
+                                            </label>
+                                        `).join('')
+                                        : esc.niveles.map((n, idx) => `
+                                            <label class="relative flex-1 cursor-pointer">
+                                                <input type="radio" name="ind_${sub.id}" value="${n.valor}" class="peer sr-only" ${idx === 0 ? 'required' : ''} ${disabledAttr}>
+                                                <div class="py-3 rounded-xl text-xs font-bold text-slate-400 peer-checked:bg-white ${ESCALA_COLOR_CLASSES[n.color] || 'peer-checked:text-emerald-600'} peer-checked:shadow-sm transition-all flex items-center justify-center">${n.nombre}</div>
+                                            </label>
+                                        `).join('');
+
                                     return `
                                     <div class="bg-white border border-slate-100 rounded-3xl p-6 hover:border-indigo-200 transition-all hover:shadow-lg hover:shadow-indigo-500/5">
                                         <div class="flex flex-col lg:flex-row lg:items-center gap-6">
                                             <div class="${leftWidthClass}">
                                                 <p class="text-slate-700 font-semibold text-base leading-snug">${sub.descripcion}</p>
-                                                ${isPie ? `
+                                                ${isEscala ? `
                                                     <div class="mt-2">
                                                         <span id="badge_score_${sub.id}" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-400" style="display: none;">
                                                             Sin evaluar
@@ -554,44 +716,13 @@ function renderVisitaForm(container, colegios, cursos, asignaturas, plantilla, d
                                                 ` : ''}
                                             </div>
                                             <div class="${rightWidthClass} flex p-1 bg-slate-50 rounded-2xl w-full">
-                                                ${isPie ? `
-                                                    <!-- Escala PIE: N/O (0), Deficiente (1), Básico (2), Competente (3), Excelente (4) -->
-                                                    ${[
-                                                        {v: 0, n: 'N/O', c: 'peer-checked:text-slate-900'},
-                                                        {v: 1, n: 'Deficiente', c: 'peer-checked:text-rose-600'},
-                                                        {v: 2, n: 'Básico', c: 'peer-checked:text-amber-600'},
-                                                        {v: 3, n: 'Competente', c: 'peer-checked:text-emerald-600'},
-                                                        {v: 4, n: 'Excelente', c: 'peer-checked:text-indigo-600'}
-                                                    ].map(opt => `
-                                                        <label class="relative flex-1 min-w-0 cursor-pointer">
-                                                            <input type="radio" name="ind_${sub.id}" value="${opt.v}" class="peer sr-only" required ${disabledAttr}>
-                                                            <div class="px-1 py-2 rounded-xl text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-tighter leading-tight text-center transition-all peer-checked:bg-white ${opt.c} peer-checked:shadow-md hover:text-indigo-600 flex items-center justify-center">
-                                                                ${opt.n}
-                                                            </div>
-                                                        </label>
-                                                    `).join('')}
-                                                ` : `
-                                                    <label class="relative flex-1 cursor-pointer">
-                                                        <input type="radio" name="ind_${sub.id}" value="1" class="peer sr-only" required ${disabledAttr}>
-                                                        <div class="py-3 rounded-xl text-xs font-bold text-slate-400 peer-checked:bg-white peer-checked:text-emerald-600 peer-checked:shadow-sm transition-all flex items-center justify-center">OBSERVADO</div>
-                                                    </label>
-                                                    <label class="relative flex-1 cursor-pointer">
-                                                        <input type="radio" name="ind_${sub.id}" value="0" class="peer sr-only" ${disabledAttr}>
-                                                        <div class="py-3 rounded-xl text-xs font-bold text-slate-400 peer-checked:bg-white peer-checked:text-rose-600 peer-checked:shadow-sm transition-all flex items-center justify-center">NO OBSERVADO</div>
-                                                    </label>
-                                                `}
+                                                ${botonesEscala}
                                             </div>
                                         </div>
-                                        ${esFormatoOrientacion(plantilla) ? `
+                                        ${textoInd.mostrar ? `
                                         <div class="mt-4 border-t border-slate-100 pt-4">
-                                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2">Estrategia a mejorar</label>
-                                            <textarea name="est_${sub.id}" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none min-h-[60px]" placeholder="Escriba la estrategia acordada para este indicador..." ${readonlyAttr}></textarea>
-                                        </div>
-                                        ` : ''}
-                                        ${esFormatoPie(plantilla) ? `
-                                        <div class="mt-4 border-t border-slate-100 pt-4">
-                                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2">Comentarios por indicador</label>
-                                            <textarea name="est_${sub.id}" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none min-h-[60px]" placeholder="Escriba observaciones o comentarios para este indicador..." ${readonlyAttr}></textarea>
+                                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2">${textoInd.etiqueta}</label>
+                                            <textarea name="est_${sub.id}" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none min-h-[60px]" placeholder="${textoInd.placeholder}" ${readonlyAttr}></textarea>
                                         </div>
                                         ` : ''}
                                     </div>
@@ -739,7 +870,7 @@ function renderVisitaForm(container, colegios, cursos, asignaturas, plantilla, d
         window.app.guardarVisita(plantilla.id, existingData?.id);
     };
 
-    if (esFormatoPie(plantilla)) {
+    if (esEscalaNumerica(plantilla)) {
         setTimeout(() => {
             window.app.actualizarPromediosPie();
             const formEl = document.getElementById('visitaMainForm');
@@ -755,18 +886,20 @@ function renderVisitaForm(container, colegios, cursos, asignaturas, plantilla, d
 }
 
 /**
- * Calcula y muestra los promedios e interpretaciones del formato PIE en tiempo real.
+ * Calcula y muestra los promedios e interpretaciones de las pautas con escala
+ * numérica (PIE y cualquier pauta cuya `config_puntuacion` defina niveles) en
+ * tiempo real. Los niveles marcados como "No observado" se excluyen del promedio.
  */
 export function actualizarPromediosPie() {
-    if (!_currentVisitaPlantilla || !esFormatoPie(_currentVisitaPlantilla)) return;
-    
-    const PIE_NIVELES = {
-        0: { texto: 'No Observado (N/O)', bg: 'bg-slate-100', text: 'text-slate-600' },
-        1: { texto: 'Deficiente', bg: 'bg-rose-50 border border-rose-100', text: 'text-rose-600' },
-        2: { texto: 'Básico', bg: 'bg-amber-50 border border-amber-100', text: 'text-amber-600' },
-        3: { texto: 'Competente', bg: 'bg-emerald-50 border border-emerald-100', text: 'text-emerald-600' },
-        4: { texto: 'Excelente', bg: 'bg-indigo-50 border border-indigo-100', text: 'text-indigo-700' }
-    };
+    if (!_currentVisitaPlantilla || !esEscalaNumerica(_currentVisitaPlantilla)) return;
+
+    const esc = parseEscala(_currentVisitaPlantilla);
+    // Mapa valor → etiqueta/colores del badge, derivado de la escala configurada.
+    const NIVELES = {};
+    esc.niveles.forEach(n => {
+        const c = ESCALA_BADGE_CLASSES[n.color] || { bg: 'bg-slate-100', text: 'text-slate-800' };
+        NIVELES[n.valor] = { texto: n.nombre, bg: c.bg, text: c.text };
+    });
 
     let globalSum = 0;
     let globalCount = 0;
@@ -783,7 +916,7 @@ export function actualizarPromediosPie() {
             if (badge) {
                 badge.style.display = 'inline-flex';
                 if (val !== null) {
-                    const info = PIE_NIVELES[val] || { texto: `Puntaje: ${val}`, bg: 'bg-slate-100', text: 'text-slate-800' };
+                    const info = NIVELES[val] || { texto: `Puntaje: ${val}`, bg: 'bg-slate-100', text: 'text-slate-800' };
                     badge.textContent = `${info.texto} (${val})`;
                     badge.className = `inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${info.bg} ${info.text}`;
                 } else {
@@ -792,7 +925,7 @@ export function actualizarPromediosPie() {
                 }
             }
 
-            if (val !== null && val > 0) {
+            if (val !== null && !esValorExcluido(esc, val)) {
                 dimSum += val;
                 dimCount++;
             }
@@ -866,28 +999,20 @@ export async function guardarVisita(plantillaId, evaluacionId = null) {
         let comentarios;
         let extraPayload = {};
 
-        if (esFormatoPie(_currentVisitaPlantilla)) {
-            comentarios = JSON.stringify({
-                obs_coordinadora: document.getElementById('pieObsCoordinadora')?.value || '',
-                obs_especialista: document.getElementById('pieObsEspecialista')?.value || '',
-                destaca_coordinadora: document.getElementById('pieDestacaCoordinadora')?.value || '',
-                destaca_especialista: document.getElementById('pieDestacaEspecialista')?.value || '',
-                mejorar_coordinadora: document.getElementById('pieMejorarCoordinadora')?.value || '',
-                mejorar_especialista: document.getElementById('pieMejorarEspecialista')?.value || ''
-            });
-
-            // Calcular promedios para PIE (excluyendo N/O que tiene valor 0)
+        // Promedios para cualquier pauta con escala numérica (PIE, Singapur, etc.),
+        // excluyendo los niveles marcados como "No observado" en config_puntuacion.
+        if (esEscalaNumerica(_currentVisitaPlantilla)) {
+            const esc = parseEscala(_currentVisitaPlantilla);
             let globalSum = 0;
             let globalCount = 0;
             const dimAverages = {};
-            
+
             _currentVisitaPlantilla.dimensiones.forEach((dim, idx) => {
                 let dimSum = 0;
                 let dimCount = 0;
                 dim.subdimensiones.forEach(sub => {
                     const val = respuestasMap[sub.id];
-                    // Excluir del cálculo si es N/O (0 o no respondido)
-                    if (val !== undefined && val > 0) {
+                    if (val !== undefined && !esValorExcluido(esc, val)) {
                         dimSum += val;
                         dimCount++;
                     }
@@ -899,12 +1024,23 @@ export async function guardarVisita(plantillaId, evaluacionId = null) {
                     globalCount++;
                 }
             });
-            
+
             const globalAvg = globalCount > 0 ? parseFloat((globalSum / globalCount).toFixed(2)) : 0;
             extraPayload = {
                 ...dimAverages,
                 promedio: globalAvg
             };
+        }
+
+        if (esFormatoPie(_currentVisitaPlantilla)) {
+            comentarios = JSON.stringify({
+                obs_coordinadora: document.getElementById('pieObsCoordinadora')?.value || '',
+                obs_especialista: document.getElementById('pieObsEspecialista')?.value || '',
+                destaca_coordinadora: document.getElementById('pieDestacaCoordinadora')?.value || '',
+                destaca_especialista: document.getElementById('pieDestacaEspecialista')?.value || '',
+                mejorar_coordinadora: document.getElementById('pieMejorarCoordinadora')?.value || '',
+                mejorar_especialista: document.getElementById('pieMejorarEspecialista')?.value || ''
+            });
         } else {
             comentarios = JSON.stringify({
                 observaciones: document.getElementById('visitaObservaciones')?.value || '',

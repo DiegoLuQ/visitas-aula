@@ -108,6 +108,60 @@
             return new Date(dateStr).toLocaleDateString('es-CL');
         }
 
+        function escapeHtml(str) {
+            return String(str ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        // Renderiza la pauta completa (dimensiones -> indicadores -> comentario)
+        // SIN puntaje ni promedio. Pensado para que el docente/funcionario revise la pauta.
+        function renderPautaSinPuntaje(details) {
+            const detalle = details.plantilla_detalle || [];
+            if (!detalle.length) return '';
+
+            const respMap = {};
+            (details.respuestas || []).forEach(r => { respMap[r.subdimension_id] = r; });
+
+            const dimsHtml = detalle.map(dim => {
+                const indicadoresHtml = (dim.indicadores || []).map(ind => {
+                    const resp = respMap[ind.id];
+                    const comentario = (resp && resp.estrategia && resp.estrategia.trim()) ? resp.estrategia.trim() : '';
+                    return `
+                        <div class="border border-slate-200 rounded-xl p-4 bg-white">
+                            <p class="text-slate-700 text-xs font-bold leading-relaxed">${escapeHtml(ind.nombre || '')}</p>
+                            ${ind.descripcion ? `<p class="text-slate-500 text-[11px] leading-relaxed mt-1">${escapeHtml(ind.descripcion)}</p>` : ''}
+                            ${comentario ? `
+                                <div class="mt-3 pt-3 border-t border-slate-100">
+                                    <span class="block text-[9px] font-bold text-indigo-600 uppercase tracking-wider mb-1">Comentario / Observación</span>
+                                    <p class="text-slate-700 text-xs leading-relaxed whitespace-pre-wrap">${escapeHtml(comentario)}</p>
+                                </div>
+                            ` : ''}
+                        </div>`;
+                }).join('');
+
+                return `
+                    <div class="space-y-3">
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3">
+                            <p class="text-xs font-black text-slate-800 uppercase tracking-wide">${escapeHtml(dim.nombre || '')}</p>
+                            ${dim.descripcion ? `<p class="text-slate-500 text-[11px] leading-relaxed mt-1">${escapeHtml(dim.descripcion)}</p>` : ''}
+                        </div>
+                        ${indicadoresHtml || '<p class="text-slate-400 text-xs italic">Sin indicadores.</p>'}
+                    </div>`;
+            }).join('');
+
+            return `
+                <div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="text-xs font-black uppercase tracking-wider text-indigo-600">PAUTA DE OBSERVACIÓN</span>
+                        <div class="h-[1px] bg-slate-200 flex-1"></div>
+                    </div>
+                    <div class="space-y-6">${dimsHtml}</div>
+                </div>`;
+        }
+
         async function init() {
             if (!token) {
                 document.body.innerHTML = '<div class="text-center p-10 bg-red-50 text-red-600 rounded-3xl font-bold">Error: Token de firma no proporcionado o inválido.</div>';
@@ -175,7 +229,7 @@
 
                 const isUTP = details.formato === 'UTP' || details.plantilla_id === 3;
                 const isOrientacion = details.formato === 'ORIENTACION' || details.plantilla_id === 2;
-                const isPIE = details.formato === 'PIE' || (details.plantilla_nombre && details.plantilla_nombre.toUpperCase().includes('PIE'));
+                const isPIE = details.formato === 'PIE';
 
                 if (isUTP) {
                     // FORMATO UTP
@@ -265,7 +319,13 @@
                     const mejorarCoordinadora = com.mejorar_coordinadora || '';
                     const mejorarEspecialista = com.mejorar_especialista || '';
 
+                    // Pauta de observación: dimensiones -> indicadores -> comentario.
+                    // SIN puntaje ni promedio (el docente/funcionario no debe ver datos cuantitativos).
+                    const pautaHtml = renderPautaSinPuntaje(details);
+
                     sectionsHtml = `
+                        ${pautaHtml}
+
                         <!-- IV. Observaciones -->
                         <div>
                             <div class="flex items-center gap-3 mb-4">

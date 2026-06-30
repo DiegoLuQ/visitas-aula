@@ -368,7 +368,38 @@ def auto_migrate_pie_plantilla():
         print(f"[MIGRACIÓN PIE] Error: {e}")
 
 
+def auto_migrate_tipo_funcionario():
+    """Crea la tabla cat_tipo_funcionario, la siembra con los tipos base
+    y agrega la columna id_tipo_funcionario a cat_docentes si no existe."""
+    from sqlalchemy import text, inspect
+    try:
+        inspector = inspect(engine)
+
+        # 1. Sembrar tipos base en cat_tipo_funcionario (create_all ya creó la tabla).
+        if 'cat_tipo_funcionario' in inspector.get_table_names():
+            with engine.connect() as conn:
+                existentes = conn.execute(text("SELECT COUNT(*) FROM cat_tipo_funcionario")).scalar()
+                if not existentes:
+                    print("[MIGRACIÓN] Sembrando tipos de funcionario base...")
+                    conn.execute(text("INSERT INTO cat_tipo_funcionario (nombre) VALUES ('Docente'), ('Especialista')"))
+                    conn.commit()
+                    print("[MIGRACIÓN] Tipos de funcionario base creados.")
+
+        # 2. Agregar columna id_tipo_funcionario a cat_docentes
+        columns_docentes = [col['name'] for col in inspector.get_columns('cat_docentes')]
+        if 'id_tipo_funcionario' not in columns_docentes:
+            print("[MIGRACIÓN] Agregando columna id_tipo_funcionario a cat_docentes...")
+            with engine.connect() as conn:
+                conn.execute(text("ALTER TABLE cat_docentes ADD COLUMN id_tipo_funcionario INTEGER NULL"))
+                conn.commit()
+            print("[MIGRACIÓN] Columna id_tipo_funcionario agregada a cat_docentes.")
+
+    except Exception as e:
+        print(f"[MIGRACIÓN TIPO FUNCIONARIO] Advertencia: {e}")
+
+
 auto_migrate_tokens()
+auto_migrate_tipo_funcionario()
 auto_migrate_reporting()
 auto_migrate_user_colegio()
 auto_migrate_user_nombre_completo()

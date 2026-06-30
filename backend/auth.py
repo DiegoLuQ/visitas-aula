@@ -97,14 +97,20 @@ def require_admin_or_director(current_user: Usuario = Depends(get_current_active
 
 
 def require_docente_manager(current_user: Usuario = Depends(get_current_active_user)) -> Usuario:
-    """Roles autorizados a gestionar docentes: admin, director, utp, liderazgo."""
+    """Roles autorizados a crear/editar/importar docentes:
+    admin + director, utp, pie, orien_conv, inspectoria (roles de Visitas) y liderazgo.
+
+    La eliminación NO pasa por aquí: sigue restringida a admin (require_admin).
+    El alcance por colegio se aplica aparte en el router (_assert_colegio_acceso).
+    """
     if current_user.rol_id == 1:
         return current_user
-    if current_user.rol and (current_user.rol.nombre or "").lower() in ("director", "utp", "liderazgo"):
+    rol_nombre = (current_user.rol.nombre or "").lower() if current_user.rol else ""
+    if rol_nombre in ("director", "utp", "pie", "orien_conv", "inspectoria", "liderazgo"):
         return current_user
     raise HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,
-        detail="Solo administradores, directores, UTP o coordinadores de liderazgo pueden gestionar docentes"
+        detail="Tu rol no tiene permiso para gestionar docentes"
     )
 
 

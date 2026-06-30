@@ -5,24 +5,35 @@
         <button class="btn btn-primary" onclick="window.app.navigateTo('visitas-nueva')">Nueva Visita</button>
     </div>
 
-    <!-- Barra de Filtros -->
-    <div class="filters-bar" style="display:flex; gap:12px; flex-wrap:wrap; align-items:center; background:#fff; padding:14px 20px; border-radius:10px; margin-bottom:20px; box-shadow:var(--shadow);">
-        <select id="filterVisitaColegio" class="form-select" style="min-width:180px;">
-            <option value="">Todos los Colegios</option>
-        </select>
-        <input type="text" id="filterVisitaDocente" class="form-select" style="min-width:180px;" placeholder="🔍 Buscar docente...">
-        <select id="filterVisitaVisitante" class="form-select" style="min-width:180px;">
-            <option value="">Todos los Visitantes</option>
-        </select>
-        <select id="filterVisitaEstado" class="form-select" style="min-width:160px;">
-            <option value="">Todos los Estados</option>
-        </select>
-        <select id="filterVisitaTipo" class="form-select" style="min-width:200px;">
-            <option value="">Todos los Acompañamientos</option>
-        </select>
-        <input type="date" id="filterVisitaDesde" class="form-select" style="min-width:150px;" title="Desde">
-        <input type="date" id="filterVisitaHasta" class="form-select" style="min-width:150px;" title="Hasta">
-        <button class="btn btn-secondary" onclick="window.app.limpiarFiltrosVisitas()">✖ Limpiar</button>
+    <!-- Barra de Filtros (compacta) -->
+    <div class="filters-bar" style="background:#fff; padding:12px 16px; border-radius:10px; margin-bottom:20px; box-shadow:var(--shadow);">
+        <!-- Fila principal: búsqueda siempre visible + acceso a filtros avanzados -->
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <input type="text" id="filterVisitaDocente" class="form-select" style="flex:1; min-width:200px;" placeholder="🔍 Buscar docente o visitante...">
+            <button id="btnToggleFiltrosVisitas" class="btn btn-secondary" onclick="window.app.toggleFiltrosVisitas()" style="white-space:nowrap;">
+                <i class="fas fa-sliders-h"></i> Filtros
+                <span id="filterVisitaBadge" style="display:none; background:#6366f1; color:#fff; border-radius:999px; min-width:18px; height:18px; padding:0 5px; font-size:11px; font-weight:700; align-items:center; justify-content:center; margin-left:4px;"></span>
+            </button>
+            <button class="btn btn-secondary" onclick="window.app.limpiarFiltrosVisitas()" title="Limpiar filtros">✖</button>
+        </div>
+
+        <!-- Panel de filtros avanzados (plegable) -->
+        <div id="filtrosAvanzadosVisitas" style="display:none; gap:10px; flex-wrap:wrap; align-items:center; margin-top:12px; padding-top:12px; border-top:1px solid #eef2f7;">
+            <select id="filterVisitaColegio" class="form-select" style="min-width:160px;">
+                <option value="">Todos los Colegios</option>
+            </select>
+            <select id="filterVisitaVisitante" class="form-select" style="min-width:160px;">
+                <option value="">Todos los Visitantes</option>
+            </select>
+            <select id="filterVisitaEstado" class="form-select" style="min-width:150px;">
+                <option value="">Todos los Estados</option>
+            </select>
+            <select id="filterVisitaTipo" class="form-select" style="min-width:180px;">
+                <option value="">Todos los Acompañamientos</option>
+            </select>
+            <input type="date" id="filterVisitaDesde" class="form-select" style="min-width:140px;" title="Desde">
+            <input type="date" id="filterVisitaHasta" class="form-select" style="min-width:140px;" title="Hasta">
+        </div>
     </div>
 
     <!-- Tarjetas (solo móvil) -->

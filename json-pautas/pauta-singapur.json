@@ -1,0 +1,131 @@
+{
+    "titulo_documento": "Pauta de Observación",
+    "metadatos_cabecera": {
+        "docente": "",
+        "asistente_de_aula": "",
+        "educadora_diferencial": "",
+        "hora": "",
+        "curso": "",
+        "fecha": "",
+        "colegio": ""
+    },
+    "escala_apreciacion": {
+        "titulo": "Escala de Apreciación",
+        "rangos": [
+            {
+                "valor": 3,
+                "descripcion": "Logrado"
+            },
+            {
+                "valor": 2,
+                "descripcion": "Medianamente logrado"
+            },
+            {
+                "valor": 1,
+                "descripcion": "No logrado"
+            },
+            {
+                "valor": 0,
+                "descripcion": "No observado"
+            }
+        ]
+    },
+    "columnas_evaluacion": [
+        "Indicadores",
+        "Ptje. (Puntaje)",
+        "Evidencia"
+    ],
+    "dimensiones": [
+        {
+            "nombre_dimension": "Aspectos Formales",
+            "indicadores": [
+                {
+                    "id": 1,
+                    "descripcion": "Establece las metas y/u objetivos de aprendizaje y la estructura de la clase. Fase Indagación."
+                },
+                {
+                    "id": 2,
+                    "descripcion": "En el desarrollo de la clase se aprecia un trabajo sistemático y planificado, manteniendo la atención del grupo. Fase Exploración."
+                },
+                {
+                    "id": 3,
+                    "descripcion": "Realiza un cierre en que sistematiza los conocimientos y habilidad matemática surgida o trabajados en la clase. Fase sistematización."
+                }
+            ]
+        },
+        {
+            "nombre_dimension": "Gestión Curricular de Aula",
+            "indicadores": [
+                {
+                    "id": 1,
+                    "descripcion": "Utiliza distintos tipos de representación (concreto – pictórico – simbólico) de la noción matemática en estudio."
+                },
+                {
+                    "id": 2,
+                    "descripcion": "Gestiona la actividad propuesta generando las condiciones para que los alumnos exploren sobre el conocimiento matemático en estudio."
+                },
+                {
+                    "id": 3,
+                    "descripcion": "Articula los conocimientos matemáticos estudiados en la clase y en clases anteriores."
+                },
+                {
+                    "id": 4,
+                    "descripcion": "Promueve que los estudiantes argumenten sus respuestas y procedimientos."
+                },
+                {
+                    "id": 5,
+                    "descripcion": "Promueve la participación y monitorea el aprendizaje colaborativo, permitiendo comunicar y contrastar conjeturas y procesos. Procesos en conjunto con docente o asistente que colabora en la clase."
+                },
+                {
+                    "id": 6,
+                    "descripcion": "Realiza una gestión frente a los errores que posibilita a los estudiantes reconocer por qué se han equivocado, promoviendo nuevos aprendizajes."
+                },
+                {
+                    "id": 7,
+                    "descripcion": "Muestra dominio del tema en estudio y un lenguaje matemático apropiado durante la clase."
+                },
+                {
+                    "id": 8,
+                    "descripcion": "Logra relacionar los contenidos matemáticos en estudio con el material didáctico."
+                },
+                {
+                    "id": 9,
+                    "descripcion": "Permite a los alumnos experiencias meta cognitivas, orientando a los alumnos para lograr procesos introspectivos."
+                },
+                {
+                    "id": 10,
+                    "descripcion": "Otorga el tiempo necesario para que los estudiantes logren realizar cada una de las actividades planteadas en clases."
+                }
+            ]
+        }
+    ],
+    "observaciones": {
+        "titulo": "Observaciones",
+        "secciones": [
+            {
+                "id": "1",
+                "etiqueta": "Registro de Clase"
+            },
+            {
+                "id": "2",
+                "etiqueta": "Comentarios Asesora"
+            },
+            {
+                "id": "3",
+                "etiqueta": "Comentarios Docente Observada"
+            },
+            {
+                "id": "4",
+                "etiqueta": "Compromisos"
+            }
+        ]
+    },
+    "firmas_requeridas": [
+        {
+            "rol": "EDUCADOR (A)"
+        },
+        {
+            "rol": "OBSERVADOR (A)/UTP"
+        }
+    ]
+}

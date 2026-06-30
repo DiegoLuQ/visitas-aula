@@ -551,7 +551,7 @@ function renderVisitaReports(stats) {
 
     const tipos = stats.por_tipo_pauta || {};
     const tipoTop = Object.keys(tipos).sort((a, b) => tipos[b] - tipos[a])[0];
-    const tipoLabels = { UTP: 'UTP', ORIENTACION: 'Orientación', LIDERAZGO: 'Liderazgo' };
+    const tipoLabels = { UTP: 'UTP', ORIENTACION: 'Orientación', PIE: 'PIE', ESCALA: 'Escala', LIDERAZGO: 'Liderazgo' };
     setTxt('vrepStatPauta', tipoTop ? (tipoLabels[tipoTop] || tipoTop) : '-');
 
     setTxt('vrepStatDocentes', Object.keys(stats.por_docente || {}).length);

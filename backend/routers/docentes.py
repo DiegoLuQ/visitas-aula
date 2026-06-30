@@ -8,11 +8,19 @@ import io
 from datetime import datetime
 
 from database import get_db
-from models import Docente, Colegio, Usuario
-from schemas import DocenteCreate, DocenteResponse
+from models import Docente, Colegio, Usuario, TipoFuncionario
+from schemas import DocenteCreate, DocenteResponse, TipoFuncionarioResponse
 from auth import require_admin, require_docente_manager, get_current_active_user
 
 router = APIRouter(prefix="/docentes", tags=["Docentes"])
+
+
+@router.get("/tipos-funcionario", response_model=List[TipoFuncionarioResponse])
+def list_tipos_funcionario(
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_active_user)
+):
+    return db.query(TipoFuncionario).order_by(TipoFuncionario.nombre).all()
 
 
 def _user_colegio_ids(user: Usuario):
@@ -36,8 +44,8 @@ def list_docentes(
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_active_user)
 ):
-    query = db.query(Docente).options(joinedload(Docente.colegio))
-    
+    query = db.query(Docente).options(joinedload(Docente.colegio), joinedload(Docente.tipo_funcionario))
+
     if colegio_id:
         query = query.filter(Docente.colegio_id == colegio_id)
     
@@ -60,10 +68,10 @@ def get_docente(
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_active_user)
 ):
-    docente = db.query(Docente).options(joinedload(Docente.colegio)).filter(Docente.id == docente_id).first()
+    docente = db.query(Docente).options(joinedload(Docente.colegio), joinedload(Docente.tipo_funcionario)).filter(Docente.id == docente_id).first()
     if not docente:
         raise HTTPException(status_code=404, detail="Docente no encontrado")
-    
+
     return docente
 
 
@@ -85,6 +93,7 @@ def create_docente(
             rut=docente.rut,
             email=docente.email,
             colegio_id=docente.colegio_id,
+            id_tipo_funcionario=docente.id_tipo_funcionario,
             created_by=current_user.id
         )
         db.add(db_docente)
@@ -116,7 +125,8 @@ def update_docente(
     docente.rut = docente_update.rut
     docente.email = docente_update.email
     docente.colegio_id = docente_update.colegio_id
-    
+    docente.id_tipo_funcionario = docente_update.id_tipo_funcionario
+
     db.commit()
     db.refresh(docente)
     

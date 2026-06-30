@@ -53,10 +53,11 @@ import { initTheme } from './modules/theme.js';
 import { 
     loadVisitasDashboard, initVisitaForm, guardarVisita, nuevaVisitaDocente, loadVisitaDocentes, cambiarTipoPauta,
     showModalDetalleVisitasDocente, setVisitaDetalleFiltro, setVisitaDetalleAnio, agregarFilaEstudiante, reordenarNumeracionEstudiantes, verLiderazgoDocente,
-    actualizarPromediosPie
+    actualizarPromediosPie, filtrarDocentesVisitados
 } from './modules/visitas.js';
 import {
     loadVisitasHistorial, aplicarFiltros as aplicarFiltrosVisitas, limpiarFiltros as limpiarFiltrosVisitas,
+    toggleFiltrosVisitas,
     verDetalleVisita, eliminarVisita, abrirModalFirma, iniciarFirmaDigital, iniciarFirmaEmail, confirmarEnvioFirma,
     regenerarLinkFirma, enviarPautaResumida, confirmarEnvioPauta
 } from './modules/visitas_historial.js';
@@ -65,7 +66,9 @@ import {
     nextStep, prevStep, setUtpViewMode
 } from './modules/utp_pauta.js';
 import {
-    initSubirVisita, loadSubirVisitaDocentes, onSubirVisitaArchivo, guardarSubirVisita
+    initSubirVisita, loadSubirVisitaDocentes, onSubirVisitaArchivo, guardarSubirVisita,
+    setSubirVisitaModo, loadSubirVisitaMasivaColegio, onSubirVisitaMasivaArchivos,
+    subirFilaMasiva, subirTodasMasiva, eliminarFilaMasiva, limpiarSubirMasiva
 } from './modules/subir_visita.js';
 import { openPdfViewer, descargarPdfVisita } from './modules/pdf_viewer.js';
 import { submitChangePassword } from './modules/cambiar_contrasena.js';
@@ -136,16 +139,18 @@ const app = {
     // Visitas
     loadVisitasDashboard, initVisitaForm, guardarVisita, nuevaVisitaDocente, loadVisitaDocentes, cambiarTipoPauta,
     showModalDetalleVisitasDocente, setVisitaDetalleFiltro, setVisitaDetalleAnio, agregarFilaEstudiante, reordenarNumeracionEstudiantes, verLiderazgoDocente,
-    actualizarPromediosPie,
+    actualizarPromediosPie, filtrarDocentesVisitados,
     // UTP Pauta
     initUtpPauta, updateUtpScore, updateUtpEvidence, addUtpPlanRow, removeUtpPlanRow, updateUtpPlanField, confirmUtpSave,
     nextStep, prevStep, setUtpViewMode,
     // Subir Visita (PDF histórico)
     initSubirVisita, loadSubirVisitaDocentes, onSubirVisitaArchivo, guardarSubirVisita,
+    setSubirVisitaModo, loadSubirVisitaMasivaColegio, onSubirVisitaMasivaArchivos,
+    subirFilaMasiva, subirTodasMasiva, eliminarFilaMasiva, limpiarSubirMasiva,
     // Visor de PDF
     openPdfViewer, descargarPdfVisita,
     // Visitas Historial
-    loadVisitasHistorial, aplicarFiltrosVisitas, limpiarFiltrosVisitas,
+    loadVisitasHistorial, aplicarFiltrosVisitas, limpiarFiltrosVisitas, toggleFiltrosVisitas,
     verDetalleVisita, eliminarVisita,
     abrirModalFirma, iniciarFirmaDigital, iniciarFirmaEmail, confirmarEnvioFirma, regenerarLinkFirma, enviarPautaResumida, confirmarEnvioPauta
 };

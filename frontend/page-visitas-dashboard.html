@@ -72,9 +72,14 @@
 
         <!-- Tabla: Docentes YA visitados -->
         <div style="background: #fff; padding: 25px; border-radius: 15px; box-shadow: var(--shadow);">
-            <h3 style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px; color: #10b981;">
-                <span>✅</span> Docentes Visitados
-            </h3>
+            <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+                <h3 style="margin: 0; display: flex; align-items: center; gap: 10px; color: #10b981;">
+                    <span>✅</span> Docentes Visitados
+                </h3>
+                <input type="text" id="buscarDocenteVisitado" placeholder="🔍 Buscar docente..."
+                    oninput="window.app.filtrarDocentesVisitados(this.value)"
+                    style="flex: 0 1 220px; min-width: 160px; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.85rem; outline: none;">
+            </div>
             <div style="max-height: 400px; overflow-y: auto; overflow-x: auto;">
                 <table class="data-table cards-sm" style="width:100%;">
                     <thead>

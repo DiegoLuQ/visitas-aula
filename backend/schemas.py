@@ -139,11 +139,27 @@ class AsignaturaResponse(AsignaturaBase):
         from_attributes = True
 
 
+class TipoFuncionarioBase(BaseModel):
+    nombre: str
+
+
+class TipoFuncionarioCreate(TipoFuncionarioBase):
+    pass
+
+
+class TipoFuncionarioResponse(TipoFuncionarioBase):
+    id: int
+
+    class Config:
+        from_attributes = True
+
+
 class DocenteBase(BaseModel):
     nombre: str
     rut: str
     email: str
     colegio_id: int
+    id_tipo_funcionario: Optional[int] = None
 
 
 class DocenteCreate(DocenteBase):
@@ -155,6 +171,7 @@ class DocenteResponse(DocenteBase):
     created_by: Optional[int]
     created_at: Optional[datetime]
     colegio: Optional[ColegioResponse] = None
+    tipo_funcionario: Optional[TipoFuncionarioResponse] = None
     totp_secret: Optional[str] = Field(None, exclude=True)
     @computed_field
     @property

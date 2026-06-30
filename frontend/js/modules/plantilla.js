@@ -448,6 +448,7 @@ export async function showModalEditPlantilla() {
                     <option value="ORIENTACION" ${plantilla.formato === 'ORIENTACION' ? 'selected' : ''}>Orientación / Convivencia</option>
                     <option value="UTP" ${plantilla.formato === 'UTP' ? 'selected' : ''}>UTP (por pasos)</option>
                     <option value="PIE" ${plantilla.formato === 'PIE' ? 'selected' : ''}>PIE</option>
+                    <option value="ESCALA" ${plantilla.formato === 'ESCALA' ? 'selected' : ''}>Escala numérica (config_puntuacion)</option>
                     <option value="LIDERAZGO" ${plantilla.formato === 'LIDERAZGO' ? 'selected' : ''}>Liderazgo</option>
                 </select>
             </div>

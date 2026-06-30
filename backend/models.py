@@ -89,6 +89,15 @@ class Asignatura(Base):
     evaluaciones = relationship("Evaluacion", back_populates="asignatura")
 
 
+class TipoFuncionario(Base):
+    __tablename__ = "cat_tipo_funcionario"
+
+    id = Column(Integer, primary_key=True, index=True)
+    nombre = Column(String(100), nullable=False)
+
+    docentes = relationship("Docente", back_populates="tipo_funcionario")
+
+
 class Docente(Base):
     __tablename__ = "cat_docentes"
 
@@ -97,6 +106,7 @@ class Docente(Base):
     rut = Column(String(20), nullable=False)
     email = Column(String(100))
     colegio_id = Column(Integer, ForeignKey("cat_colegios.id"), nullable=False)
+    id_tipo_funcionario = Column(Integer, ForeignKey("cat_tipo_funcionario.id"), nullable=True)
     totp_secret = Column(String(100), nullable=True)  # Secreto Base32 para TOTP
     created_by = Column(Integer, ForeignKey("auth_usuarios.id"))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -106,6 +116,7 @@ class Docente(Base):
     )
 
     colegio = relationship("Colegio", back_populates="docentes")
+    tipo_funcionario = relationship("TipoFuncionario", back_populates="docentes")
     creado_por = relationship("Usuario", back_populates="docentes_creados")
     evaluaciones = relationship("Evaluacion", back_populates="docente")
 

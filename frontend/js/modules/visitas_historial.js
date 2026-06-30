@@ -100,6 +100,13 @@ function estadoBadgeStyle(estado) {
     return `background: ${cerrada ? '#f1f5f9' : '#f0fdf4'}; color: ${cerrada ? '#64748b' : '#16a34a'}; border: 1px solid ${cerrada ? '#e2e8f0' : '#bbf7d0'};`;
 }
 
+// Formatos cuya pauta usa escala numérica con promedio (se muestra igual que UTP).
+// Cubre el UTP base, las copias UTP por colegio y todas las pautas PIE.
+const FORMATOS_CON_PROMEDIO = ['UTP', 'PIE'];
+function tienePromedioNumerico(v) {
+    return FORMATOS_CON_PROMEDIO.includes((v.plantilla_formato || '').toUpperCase());
+}
+
 function renderTable(visitas) {
     renderTableRows(visitas);
     renderCards(visitas);
@@ -125,7 +132,7 @@ function renderTableRows(visitas) {
             <td>
                 <div class="flex flex-col">
                     <span style="font-weight: 700; color: #334155; font-size: 0.9rem;">${v.plantilla_nombre || 'Visita Aula'}</span>
-                    ${v.plantilla_id == 3 ? `<span class="badge ${getBadgeClass(v.promedio)}" style="margin-top:4px; align-self:flex-start;">${v.promedio?.toFixed(2)}</span>` : ''}
+                    ${tienePromedioNumerico(v) && v.promedio != null ? `<span class="badge ${getBadgeClass(v.promedio)}" style="margin-top:4px; align-self:flex-start;">${v.promedio.toFixed(2)}</span>` : ''}
                 </div>
             </td>
             <td>
@@ -149,7 +156,7 @@ function renderCards(visitas) {
     }
 
     cont.innerHTML = visitas.map(v => {
-        const prom = (v.plantilla_id == 3 && v.promedio != null)
+        const prom = (tienePromedioNumerico(v) && v.promedio != null)
             ? `<span class="badge ${getBadgeClass(v.promedio)}" style="margin-left:6px;">${v.promedio.toFixed(2)}</span>`
             : '';
         return `
@@ -265,7 +272,29 @@ export function aplicarFiltros() {
     if (desde) data = data.filter(v => v.fecha >= desde);
     if (hasta) data = data.filter(v => v.fecha <= hasta);
 
+    actualizarBadgeFiltros();
     renderTable(data);
+}
+
+// Muestra/oculta el panel de filtros avanzados (búsqueda siempre visible).
+export function toggleFiltrosVisitas() {
+    const panel = document.getElementById('filtrosAvanzadosVisitas');
+    const btn = document.getElementById('btnToggleFiltrosVisitas');
+    if (!panel) return;
+    const oculto = getComputedStyle(panel).display === 'none';
+    panel.style.display = oculto ? 'flex' : 'none';
+    if (btn) btn.classList.toggle('active', oculto);
+}
+
+// Actualiza el contador de filtros avanzados activos en el botón "Filtros".
+function actualizarBadgeFiltros() {
+    const ids = ['filterVisitaColegio', 'filterVisitaVisitante', 'filterVisitaEstado', 'filterVisitaTipo', 'filterVisitaDesde', 'filterVisitaHasta'];
+    const activos = ids.filter(id => document.getElementById(id)?.value).length;
+    const badge = document.getElementById('filterVisitaBadge');
+    if (badge) {
+        badge.textContent = activos;
+        badge.style.display = activos ? 'inline-flex' : 'none';
+    }
 }
 
 export function limpiarFiltros() {
@@ -273,6 +302,7 @@ export function limpiarFiltros() {
         const el = document.getElementById(id);
         if (el) el.value = '';
     });
+    actualizarBadgeFiltros();
     renderTable(state.allVisitasHistorial || []);
 }
 

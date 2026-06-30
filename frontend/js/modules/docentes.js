@@ -6,7 +6,7 @@ import { showModal, closeModal } from './ui.js';
 export async function loadDocentes() {
     const tbody = document.getElementById('docentesBody');
     if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="6">Cargando...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7">Cargando...</td></tr>';
 
     const filterColegio = document.getElementById('filterColegioDocentes')?.value;
     const filterNombre = document.getElementById('filterNombreDocentes')?.value?.toLowerCase();
@@ -26,9 +26,12 @@ export async function loadDocentes() {
         }
 
         if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center">No hay docentes registrados</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center">No hay docentes registrados</td></tr>';
             return;
         }
+
+        // Eliminar docentes está restringido a admin (igual que en el backend).
+        const esAdmin = state.currentUser?.rol_id === 1;
 
         tbody.innerHTML = data.map(d => `
             <tr>
@@ -36,6 +39,7 @@ export async function loadDocentes() {
                 <td>${d.nombre}</td>
                 <td>${d.rut}</td>
                 <td>${d.email || '-'}</td>
+                <td>${d.tipo_funcionario?.nombre || '-'}</td>
                 <td>${d.colegio?.nombre || '-'}</td>
                 <td>
                     <div class="actions">
@@ -47,9 +51,10 @@ export async function loadDocentes() {
                         <button class="btn btn-warning btn-sm" onclick="window.app.editDocente(${d.id})" title="Editar">
                             <i class="fas fa-edit"></i>
                         </button>
+                        ${esAdmin ? `
                         <button class="btn btn-danger btn-sm" onclick="window.app.deleteDocente(${d.id})" title="Eliminar">
                             <i class="fas fa-trash"></i>
-                        </button>
+                        </button>` : ''}
                     </div>
                 </td>
             </tr>
@@ -57,7 +62,7 @@ export async function loadDocentes() {
         
         setState('docentes', data);
     } catch (error) {
-        tbody.innerHTML = `<tr><td colspan="6" class="text-center">Error: ${error.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center">Error: ${error.message}</td></tr>`;
     }
 }
 
@@ -83,6 +88,8 @@ export async function saveDocente(id) {
     const rut = document.getElementById('modalRut').value;
     const email = document.getElementById('modalEmail').value;
     const colegio_id = parseInt(document.getElementById('modalColegio').value);
+    const tipoFuncionarioRaw = document.getElementById('modalTipoFuncionario')?.value;
+    const id_tipo_funcionario = tipoFuncionarioRaw ? parseInt(tipoFuncionarioRaw) : null;
 
     // Validación de campos obligatorios
     if (!nombre || !rut || !email || !colegio_id) { 
@@ -99,9 +106,9 @@ export async function saveDocente(id) {
 
     try {
         if (id && id !== 'null') {
-            await api.docentes.update(id, { nombre, rut, email, colegio_id });
+            await api.docentes.update(id, { nombre, rut, email, colegio_id, id_tipo_funcionario });
         } else {
-            await api.docentes.create({ nombre, rut, email, colegio_id });
+            await api.docentes.create({ nombre, rut, email, colegio_id, id_tipo_funcionario });
         }
         closeModal();
         loadDocentes();

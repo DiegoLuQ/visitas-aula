@@ -413,7 +413,15 @@ document.getElementById('formUsuario')?.addEventListener('submit', async (e) => 
     if (colegioContainer) {
         const todosCheck = colegioContainer.querySelector('input[value="todos"]');
         if (todosCheck && todosCheck.checked) {
-            colegio_id = ''; // Acceso total se guarda vacío en la BD
+            // Para el admin (rol_id 1) un colegio_id vacío significa "acceso total".
+            // Para los demás roles (director, utp, pie, etc.) un colegio_id vacío
+            // significa "ningún colegio" y deja al usuario sin plantillas visibles,
+            // así que "Todos los Colegios" se expande a la lista real de colegios.
+            if (rol_id === 1) {
+                colegio_id = '';
+            } else {
+                colegio_id = (state.colegios || []).map(c => c.id).join(',');
+            }
         } else {
             const checkedBoxes = colegioContainer.querySelectorAll('input[name="colegio_check"]:checked');
             colegio_id = Array.from(checkedBoxes).map(cb => cb.value).join(',');

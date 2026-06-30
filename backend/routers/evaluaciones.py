@@ -1202,8 +1202,39 @@ async def get_public_detail(
             comentarios_data = json.loads(evaluacion.comentarios)
         except Exception:
             comentarios_data = {"raw": evaluacion.comentarios}
-    is_pie = (evaluacion.plantilla.formato == "PIE") if evaluacion.plantilla else False
-    promedio_val = 0.0 if is_pie else (float(evaluacion.promedio) if evaluacion.promedio else 0.0)
+    # PIE usa escala numérica como UTP: conserva su promedio (antes se forzaba a 0).
+    promedio_val = float(evaluacion.promedio) if evaluacion.promedio else 0.0
+
+    # Árbol completo de la plantilla (dimensiones -> indicadores) para que el docente
+    # pueda revisar la pauta. NUNCA se incluye puntaje/promedio en esta sección.
+    plantilla_detalle = [
+        {
+            "id": d.id,
+            "nombre": d.nombre,
+            "descripcion": d.descripcion,
+            "orden": d.orden,
+            "indicadores": [
+                {
+                    "id": s.id,
+                    "nombre": s.nombre,
+                    "descripcion": s.descripcion,
+                    "orden": s.orden,
+                }
+                for s in sorted(d.subdimensiones, key=lambda x: x.orden or 0)
+            ],
+        }
+        for d in sorted(evaluacion.plantilla.dimensiones, key=lambda x: x.orden or 0)
+    ] if evaluacion.plantilla else []
+
+    # Respuestas por indicador: solo el comentario (estrategia). El puntaje (valor)
+    # se omite deliberadamente porque el docente/funcionario no debe ver datos cuantitativos.
+    respuestas_data = [
+        {
+            "subdimension_id": r.subdimension_id,
+            "estrategia": r.estrategia,
+        }
+        for r in evaluacion.respuestas
+    ]
 
     return {
         "id": evaluacion.id,
@@ -1227,6 +1258,8 @@ async def get_public_detail(
             }
             for fa in evaluacion.fortalezas_aspectos
         ],
+        "plantilla_detalle": plantilla_detalle,
+        "respuestas": respuestas_data,
         "comentarios": comentarios_data
     }
 
