@@ -28,11 +28,11 @@ def _colegios_usuario(user: Usuario) -> list[int]:
 
 
 def _es_director(user: Usuario) -> bool:
-    return bool(user.rol and (user.rol.nombre or "").lower() == "director")
+    return bool(user.rol and (user.rol.nombre or "").lower() in ("director", "encargado_pie"))
 
 
 def _verificar_acceso_plantilla(user: Usuario, plantilla: Plantilla) -> None:
-    """El director solo puede acceder a plantillas de su(s) colegio(s)."""
+    """El director o encargado PIE solo puede acceder a plantillas de su(s) colegio(s)."""
     if _is_admin(user) or not _es_director(user):
         return
     colegios = _colegios_usuario(user)
@@ -63,8 +63,8 @@ def list_plantillas(
         colegios = _colegios_usuario(current_user)
         role_name = (current_user.rol.nombre or "").lower() if current_user.rol else ""
 
-        if role_name == "director":
-            # El director SOLO ve las plantillas de su(s) colegio(s), ninguna otra
+        if role_name in ("director", "encargado_pie"):
+            # El director / encargado_pie SOLO ve las plantillas de su(s) colegio(s), ninguna otra
             # (ni globales/LIDERAZGO ni de otros colegios).
             if colegios:
                 query = query.filter(Plantilla.colegio_id.in_(colegios))

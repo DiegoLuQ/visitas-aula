@@ -434,6 +434,7 @@ def listar_evaluaciones(
 ):
     query = db.query(Evaluacion).options(
         joinedload(Evaluacion.docente).joinedload(Docente.colegio),
+        joinedload(Evaluacion.docente).joinedload(Docente.tipo_funcionario),
         joinedload(Evaluacion.curso).joinedload(Curso.nivel),
         joinedload(Evaluacion.asignatura),
         joinedload(Evaluacion.observador),
@@ -444,8 +445,11 @@ def listar_evaluaciones(
     # Join con Docente para poder filtrar por colegio
     query = query.join(Docente)
 
-    is_liderazgo = current_user.rol and (current_user.rol.nombre or "").lower() == "liderazgo"
-    if current_user.rol_id in (3, 8) or is_liderazgo:
+    role_name = (current_user.rol.nombre or "").lower() if current_user.rol else ""
+    # Admin (rol_id 1), director y encargado_pie pueden ver TODAS las visitas de sus colegios asignados.
+    # Los demás roles solo ven sus propias visitas (donde usuario_id sea el suyo).
+    can_view_all_visits = (current_user.rol_id == 1) or (role_name in ("director", "encargado_pie"))
+    if not can_view_all_visits:
         query = query.filter(Evaluacion.usuario_id == current_user.id)
 
     # Filtro por colegio_id del usuario (Seguridad)
@@ -474,6 +478,7 @@ def listar_evaluaciones(
             "orientacion": e.orientacion,
             "docente_id": e.docente_id,
             "docente_nombre": e.docente.nombre if e.docente else None,
+            "docente_tipo_funcionario": e.docente.tipo_funcionario.nombre if (e.docente and e.docente.tipo_funcionario) else None,
             "colegio_id": e.docente.colegio_id if e.docente else None,
             "colegio_nombre": e.docente.colegio.nombre if e.docente and e.docente.colegio else None,
             "curso_nombre": f"{e.curso.nivel.nombre} {e.curso.letra}" if e.curso and e.curso.nivel else None,

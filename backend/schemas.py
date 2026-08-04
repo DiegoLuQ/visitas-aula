@@ -450,6 +450,7 @@ class EvaluacionListResponse(BaseModel):
     orientacion: Optional[str] = None
     docente_id: int
     docente_nombre: Optional[str] = None
+    docente_tipo_funcionario: Optional[str] = None
     colegio_id: Optional[int] = None
     colegio_nombre: Optional[str] = None
     curso_nombre: Optional[str] = None

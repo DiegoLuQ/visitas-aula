@@ -85,20 +85,20 @@ def require_admin_or_auditor(current_user: Usuario = Depends(get_current_active_
 
 
 def require_admin_or_director(current_user: Usuario = Depends(get_current_active_user)) -> Usuario:
-    # Admin (rol_id == 1) o el rol "director" (creado dinámicamente, id no fijo -> se valida por nombre)
+    # Admin (rol_id == 1) o el rol "director" / "encargado_pie" (creados dinámicamente, id no fijo -> se valida por nombre)
     if current_user.rol_id == 1:
         return current_user
-    if current_user.rol and (current_user.rol.nombre or "").lower() == "director":
+    if current_user.rol and (current_user.rol.nombre or "").lower() in ("director", "encargado_pie"):
         return current_user
     raise HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,
-        detail="Solo administradores o directores pueden realizar esta acción"
+        detail="Solo administradores, directores o encargados PIE pueden realizar esta acción"
     )
 
 
 def require_docente_manager(current_user: Usuario = Depends(get_current_active_user)) -> Usuario:
     """Roles autorizados a crear/editar/importar docentes:
-    admin + director, utp, pie, orien_conv, inspectoria (roles de Visitas) y liderazgo.
+    admin + director, encargado_pie, utp, pie, orien_conv, inspectoria (roles de Visitas) y liderazgo.
 
     La eliminación NO pasa por aquí: sigue restringida a admin (require_admin).
     El alcance por colegio se aplica aparte en el router (_assert_colegio_acceso).
@@ -106,7 +106,7 @@ def require_docente_manager(current_user: Usuario = Depends(get_current_active_u
     if current_user.rol_id == 1:
         return current_user
     rol_nombre = (current_user.rol.nombre or "").lower() if current_user.rol else ""
-    if rol_nombre in ("director", "utp", "pie", "orien_conv", "inspectoria", "liderazgo"):
+    if rol_nombre in ("director", "encargado_pie", "utp", "pie", "orien_conv", "inspectoria", "liderazgo"):
         return current_user
     raise HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,
@@ -115,14 +115,14 @@ def require_docente_manager(current_user: Usuario = Depends(get_current_active_u
 
 
 def require_plantilla_manager(current_user: Usuario = Depends(get_current_active_user)) -> Usuario:
-    """Roles autorizados a gestionar plantillas: admin, director, utp, pie, orien_conv."""
+    """Roles autorizados a gestionar plantillas: admin, director, encargado_pie, utp, pie, orien_conv."""
     if current_user.rol_id == 1:
         return current_user
-    if current_user.rol and (current_user.rol.nombre or "").lower() in ("director", "utp", "pie", "orien_conv"):
+    if current_user.rol and (current_user.rol.nombre or "").lower() in ("director", "encargado_pie", "utp", "pie", "orien_conv"):
         return current_user
     raise HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,
-        detail="Solo administradores, directores, UTP, coordinadores PIE o Convivencia pueden gestionar plantillas"
+        detail="Solo administradores, directores, encargados PIE, UTP, coordinadores PIE o Convivencia pueden gestionar plantillas"
     )
 
 

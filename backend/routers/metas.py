@@ -16,7 +16,7 @@ router = APIRouter(prefix="/metas", tags=["Metas"])
 
 PERIODOS_VALIDOS = {"SEMESTRE", "ANUAL"}
 # Roles que realizan visitas (los que pueden tener meta)
-ROLES_VISITA = ("director", "inspectoria", "utp", "orien_conv", "pie")
+ROLES_VISITA = ("director", "encargado_pie", "inspectoria", "utp", "orien_conv", "pie")
 XLSX_MEDIA = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 IMPORT_COLUMNS = ["Usuario", "Año", "Periodo", "Cantidad"]
 

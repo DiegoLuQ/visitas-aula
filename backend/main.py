@@ -201,7 +201,7 @@ def auto_migrate_roles():
     """
     from models import Rol, Usuario
 
-    CANONICAL = ["admin", "director", "utp", "liderazgo", "orien_conv", "pie", "inspectoria", "usuario"]
+    CANONICAL = ["admin", "director", "encargado_pie", "utp", "liderazgo", "orien_conv", "pie", "inspectoria", "usuario"]
     try:
         db = SessionLocal()
 

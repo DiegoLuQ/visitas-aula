@@ -295,17 +295,32 @@ export async function editUsuario(id = null) {
                 { id: 5, nombre: 'liderazgo' },
                 { id: 6, nombre: 'orien_conv' },
                 { id: 7, nombre: 'pie' },
-                { id: 8, nombre: 'inspectoria' }
+                { id: 8, nombre: 'inspectoria' },
+                { id: 9, nombre: 'encargado_pie' }
             ]; // Fallback
         }
     }
 
+    const ROLE_DISPLAY_NAMES = {
+        encargado_pie: 'EncargadoPie',
+        director: 'Director',
+        admin: 'Administrador',
+        utp: 'UTP',
+        liderazgo: 'Liderazgo',
+        orien_conv: 'Orientación / Convivencia',
+        pie: 'PIE',
+        inspectoria: 'Inspectoría',
+        usuario: 'Usuario'
+    };
+
     const selRol = document.getElementById('editUserRol');
     if (selRol) {
         console.log("Poblando select de roles con:", roles);
-        selRol.innerHTML = roles.map(r => 
-            `<option value="${r.id}" ${isEdit && parseInt(r.id) === parseInt(user.rol_id) ? 'selected' : ''}>${r.nombre}</option>`
-        ).join('');
+        selRol.innerHTML = roles.map(r => {
+            const raw = (r.nombre || '').toLowerCase();
+            const label = ROLE_DISPLAY_NAMES[raw] || r.nombre;
+            return `<option value="${r.id}" ${isEdit && parseInt(r.id) === parseInt(user.rol_id) ? 'selected' : ''}>${label}</option>`;
+        }).join('');
     }
 
     document.getElementById('modalUsuario').classList.add('active');

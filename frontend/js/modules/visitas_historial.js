@@ -25,8 +25,11 @@ export async function loadVisitasHistorial() {
 
         // Solo el ADMIN ve todas las visitas (de ambos colegios y de todos los usuarios).
         // Cualquier otro rol ve únicamente las visitas que él realizó (su colegio).
-        const isAdmin = Number(state.currentUser?.rol_id) === 1;
-        if (!isAdmin) {
+        // Admin (rol_id 1), director y encargado_pie ven todas las visitas cargadas (filtradas por colegio por backend).
+        // Cualquier otro rol ve únicamente las visitas que él realizó o le pertenecen.
+        const roleName = (state.currentUser?.rol?.nombre || '').toLowerCase();
+        const canViewAll = Number(state.currentUser?.rol_id) === 1 || roleName === 'director' || roleName === 'encargado_pie';
+        if (!canViewAll) {
             const uid = state.currentUser?.id;
             visitas = visitas.filter(v => v.observador_id == uid || v.usuario_id == uid);
         }
@@ -236,6 +239,7 @@ function setupFilters() {
     const fVis = document.getElementById('filterVisitaVisitante');
     const fEst = document.getElementById('filterVisitaEstado');
     const fTipo = document.getElementById('filterVisitaTipo');
+    const fFunc = document.getElementById('filterVisitaTipoFuncionario');
     const fDesde = document.getElementById('filterVisitaDesde');
     const fHasta = document.getElementById('filterVisitaHasta');
 
@@ -246,6 +250,7 @@ function setupFilters() {
     if (fVis) fVis.onchange = run;
     if (fEst) fEst.onchange = run;
     if (fTipo) fTipo.onchange = run;
+    if (fFunc) fFunc.onchange = run;
     if (fDesde) fDesde.onchange = run;
     if (fHasta) fHasta.onchange = run;
 }
@@ -256,6 +261,7 @@ export function aplicarFiltros() {
     const visitanteId = document.getElementById('filterVisitaVisitante')?.value;
     const estado = document.getElementById('filterVisitaEstado')?.value;
     const tipoId = document.getElementById('filterVisitaTipo')?.value;
+    const tipoFunc = document.getElementById('filterVisitaTipoFuncionario')?.value;
     const desde = document.getElementById('filterVisitaDesde')?.value;
     const hasta = document.getElementById('filterVisitaHasta')?.value;
 
@@ -269,6 +275,21 @@ export function aplicarFiltros() {
     if (visitanteId) data = data.filter(v => v.observador_id == visitanteId);
     if (estado) data = data.filter(v => (v.estado || 'ABIERTA') === estado);
     if (tipoId) data = data.filter(v => v.plantilla_id == tipoId);
+    if (tipoFunc) {
+        const tfLower = tipoFunc.toLowerCase();
+        data = data.filter(v => {
+            const funcName = (v.docente_tipo_funcionario || '').toLowerCase();
+            const plantillaFormato = (v.plantilla_formato || '').toLowerCase();
+            const plantillaNombre = (v.plantilla_nombre || '').toLowerCase();
+            
+            if (tfLower === 'especialista') {
+                return funcName.includes('especialista') || plantillaFormato.includes('pie') || plantillaNombre.includes('pie');
+            } else if (tfLower === 'docente') {
+                return funcName.includes('docente') || (!plantillaFormato.includes('pie') && !plantillaNombre.includes('pie'));
+            }
+            return true;
+        });
+    }
     if (desde) data = data.filter(v => v.fecha >= desde);
     if (hasta) data = data.filter(v => v.fecha <= hasta);
 
@@ -288,7 +309,7 @@ export function toggleFiltrosVisitas() {
 
 // Actualiza el contador de filtros avanzados activos en el botón "Filtros".
 function actualizarBadgeFiltros() {
-    const ids = ['filterVisitaColegio', 'filterVisitaVisitante', 'filterVisitaEstado', 'filterVisitaTipo', 'filterVisitaDesde', 'filterVisitaHasta'];
+    const ids = ['filterVisitaColegio', 'filterVisitaVisitante', 'filterVisitaEstado', 'filterVisitaTipo', 'filterVisitaTipoFuncionario', 'filterVisitaDesde', 'filterVisitaHasta'];
     const activos = ids.filter(id => document.getElementById(id)?.value).length;
     const badge = document.getElementById('filterVisitaBadge');
     if (badge) {
@@ -298,7 +319,7 @@ function actualizarBadgeFiltros() {
 }
 
 export function limpiarFiltros() {
-    ['filterVisitaColegio', 'filterVisitaDocente', 'filterVisitaVisitante', 'filterVisitaEstado', 'filterVisitaTipo', 'filterVisitaDesde', 'filterVisitaHasta'].forEach(id => {
+    ['filterVisitaColegio', 'filterVisitaDocente', 'filterVisitaVisitante', 'filterVisitaEstado', 'filterVisitaTipo', 'filterVisitaTipoFuncionario', 'filterVisitaDesde', 'filterVisitaHasta'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = '';
     });

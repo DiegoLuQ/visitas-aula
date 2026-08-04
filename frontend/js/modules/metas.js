@@ -2,7 +2,7 @@ import { api } from '../api.js';
 import { state, setState } from '../state.js';
 import { showAlert, mostrarLoading } from '../utils.js';
 
-const ROL_LABEL = { inspectoria: 'Inspectoría', director: 'Director', utp: 'UTP', pie: 'PIE', orien_conv: 'Orient./Conv.' };
+const ROL_LABEL = { inspectoria: 'Inspectoría', director: 'Director', encargado_pie: 'Encargado PIE', utp: 'UTP', pie: 'PIE', orien_conv: 'Orient./Conv.' };
 const PERIODO_LABEL = { ANUAL: 'Anual', SEMESTRE: 'Semestral' };
 
 let _metasFiltrosInit = false;

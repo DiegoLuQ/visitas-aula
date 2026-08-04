@@ -46,6 +46,7 @@ const ROLE_CONFIG = {
         pages: ['inicio', 'evaluaciones', 'nueva-evaluacion', 'cambiar-contrasena']
     }
 };
+ROLE_CONFIG.encargado_pie = ROLE_CONFIG.director;
 // utp, pie e inspectoria tienen el mismo acceso a módulos que orien_conv
 ROLE_CONFIG.utp = ROLE_CONFIG.orien_conv;
 ROLE_CONFIG.pie = ROLE_CONFIG.orien_conv;
