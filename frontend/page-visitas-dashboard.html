@@ -5,13 +5,26 @@
         <p class="subtitle">Seguimiento y acompañamiento directivo</p>
     </div>
 
-    <!-- Filtro de Colegio (solo para admins globales) -->
+    <!-- Filtro de Colegio y Tipo de Funcionario -->
     <div id="visitasDashboardFilter" style="background: #fff; padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: var(--shadow); display: none;">
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <div style="background: #f1f5f9; padding: 10px; border-radius: 10px; font-size: 1.2rem;">🏢</div>
-            <div style="flex: 1;">
-                <label style="display: block; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px;">Filtrar por Establecimiento</label>
-                <select id="visitaDashColegio" class="form-control" style="background: #f8fafc; border: 1px solid #e2e8f0; font-weight: 600;"></select>
+        <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+            <div id="wrapperDashColegio" style="display: flex; align-items: center; gap: 15px; flex: 1; min-width: 250px;">
+                <div style="background: #f1f5f9; padding: 10px; border-radius: 10px; font-size: 1.2rem;">🏢</div>
+                <div style="flex: 1;">
+                    <label style="display: block; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px;">Filtrar por Establecimiento</label>
+                    <select id="visitaDashColegio" class="form-control" style="background: #f8fafc; border: 1px solid #e2e8f0; font-weight: 600;"></select>
+                </div>
+            </div>
+            <div id="wrapperDashTipoFuncionario" style="display: flex; align-items: center; gap: 15px; flex: 1; min-width: 220px;">
+                <div style="background: #f1f5f9; padding: 10px; border-radius: 10px; font-size: 1.2rem;">👨‍🏫</div>
+                <div style="flex: 1;">
+                    <label style="display: block; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px;">Tipo de Funcionario</label>
+                    <select id="visitaDashTipoFuncionario" class="form-control" style="background: #f8fafc; border: 1px solid #e2e8f0; font-weight: 600;">
+                        <option value="">Todos (Docentes y Especialistas)</option>
+                        <option value="Docente">Solo Docentes</option>
+                        <option value="Especialista">Solo Especialistas</option>
+                    </select>
+                </div>
             </div>
         </div>
     </div>

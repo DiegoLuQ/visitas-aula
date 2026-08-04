@@ -239,6 +239,11 @@ export async function loadVisitasDashboard() {
         colegioSelect.innerHTML = '<option value="">-- Seleccione un Establecimiento --</option>' +
             colegios.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
         colegioSelect.onchange = () => refreshVisitasDashboard();
+        
+        const tipoFuncSelect = document.getElementById('visitaDashTipoFuncionario');
+        if (tipoFuncSelect) {
+            tipoFuncSelect.onchange = () => refreshVisitasDashboard();
+        }
         _dashFilterInitialized = true;
     }
 
@@ -288,7 +293,20 @@ async function refreshVisitasDashboardData(colegioId, year) {
         mostrarLoading(true, 'Cargando dashboard...');
 
         const allDocentes = await api.docentes.getAll();
-        const docentes = allDocentes.filter(d => d.colegio_id == parseInt(colegioId));
+        let docentes = allDocentes.filter(d => d.colegio_id == parseInt(colegioId));
+
+        // Filtro por tipo de funcionario (Docente vs Especialista)
+        const tipoFuncVal = (document.getElementById('visitaDashTipoFuncionario')?.value || '').toLowerCase();
+        if (tipoFuncVal) {
+            docentes = docentes.filter(d => {
+                const nombreTipo = (d.tipo_funcionario?.nombre || '').toLowerCase();
+                if (!nombreTipo) {
+                    // Si no tiene tipo_funcionario asignado, por defecto es Docente
+                    return tipoFuncVal.includes('docente');
+                }
+                return nombreTipo.includes(tipoFuncVal) || (tipoFuncVal.includes('especialista') && nombreTipo.includes('pie'));
+            });
+        }
 
         const allVisitas = await api.evaluaciones.getAll();
         

@@ -282,10 +282,11 @@ export function aplicarFiltros() {
             const plantillaFormato = (v.plantilla_formato || '').toLowerCase();
             const plantillaNombre = (v.plantilla_nombre || '').toLowerCase();
             
+            const esEsp = funcName.includes('especialista') || funcName.includes('pie') || plantillaFormato.includes('pie') || plantillaNombre.includes('pie');
             if (tfLower === 'especialista') {
-                return funcName.includes('especialista') || plantillaFormato.includes('pie') || plantillaNombre.includes('pie');
+                return esEsp;
             } else if (tfLower === 'docente') {
-                return funcName.includes('docente') || (!plantillaFormato.includes('pie') && !plantillaNombre.includes('pie'));
+                return !esEsp || funcName.includes('docente');
             }
             return true;
         });
