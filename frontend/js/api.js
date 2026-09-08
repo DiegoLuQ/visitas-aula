@@ -315,6 +315,9 @@ export const api = {
         requestRemoteSign(id) { return api.post(`/evaluaciones/${id}/request-remote-sign`); },
         publicSignRemote(data) { return api.post('/evaluaciones/public-sign-remote', data); },
         finalize(id) { return api.post(`/evaluaciones/${id}/finalize`); },
+        generateTempShareLink(id) {
+            return api.post(`/evaluaciones/${id}/generate-temp-share-link`);
+        },
         sendEmail(id, target = 'all') {
             return api.post(`/evaluaciones/${id}/send-email?target=${target}`, {});
         }

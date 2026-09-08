@@ -136,14 +136,34 @@ def build_evaluacion_response(evaluacion: Evaluacion) -> dict:
 
 @router.get("/public/ver/{codigo}")
 def get_public_evaluacion(codigo: str, db: Session = Depends(get_db)):
-    # 1. Buscar evaluación por cualquiera de sus códigos (firma, full o pedagógico)
-    evaluacion = db.query(Evaluacion).filter(
-        or_(
-            Evaluacion.codigo_firma == codigo,
-            Evaluacion.token_full == codigo,
-            Evaluacion.token_pedagogico == codigo
-        )
-    ).first()
+    # 1. Verificar si el código es un token JWT temporal (expira en 1 hora, modo pedagógico sin puntajes)
+    evaluacion = None
+    is_pedagogico = False
+    
+    if codigo and len(codigo) > 50 and "." in codigo:
+        try:
+            payload = jwt.decode(codigo, SECRET_KEY, algorithms=[ALGORITHM])
+            eval_id = payload.get("eval_id")
+            purpose = payload.get("purpose")
+            if purpose == "temp_share_pedagogico" and eval_id:
+                evaluacion = db.query(Evaluacion).filter(Evaluacion.id == eval_id).first()
+                is_pedagogico = True
+            else:
+                raise HTTPException(status_code=401, detail="Tipo de enlace temporal inválido")
+        except jwt.ExpiredSignatureError:
+            raise HTTPException(status_code=401, detail="El enlace temporal ha expirado (validez de 1 hora superada). Solicite uno nuevo.")
+        except JWTError:
+            pass # Continuar con búsqueda por código o token uuid estándar
+
+    # Si no fue JWT temporal, buscar evaluación por sus códigos persistentes
+    if not evaluacion:
+        evaluacion = db.query(Evaluacion).filter(
+            or_(
+                Evaluacion.codigo_firma == codigo,
+                Evaluacion.token_full == codigo,
+                Evaluacion.token_pedagogico == codigo
+            )
+        ).first()
     
     if not evaluacion:
         raise HTTPException(status_code=404, detail="Acompañamiento no encontrado o código inválido")
@@ -151,8 +171,9 @@ def get_public_evaluacion(codigo: str, db: Session = Depends(get_db)):
     if evaluacion.estado.value != "CERRADA":
         raise HTTPException(status_code=403, detail="El acompañamiento aún no está finalizado")
     
-    # 2. Identificar modo de acceso
-    is_pedagogico = (codigo == evaluacion.token_pedagogico)
+    # 2. Identificar modo de acceso si no viene marcado ya por token JWT
+    if not is_pedagogico:
+        is_pedagogico = (codigo == evaluacion.token_pedagogico)
     
     # 3. Construir respuesta base
     res = build_evaluacion_response(evaluacion)
@@ -1752,6 +1773,41 @@ async def finalize_evaluation(
     evaluacion.estado = EvaluacionEstado.CERRADA
     db.commit()
     return {"message": "Acompañamiento cerrado definitivamente", "estado": evaluacion.estado.value}
+
+
+@router.post("/{eval_id}/generate-temp-share-link")
+async def generate_temp_share_link(
+    eval_id: int,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_active_user)
+):
+    """
+    Genera un token JWT firmado de 1 hora para compartir con el funcionario/docente.
+    El enlace es privado y muestra la evaluación sin puntajes (solo observaciones pedagógicas).
+    """
+    evaluacion = db.query(Evaluacion).filter(Evaluacion.id == eval_id).first()
+    if not evaluacion:
+        raise HTTPException(status_code=404, detail="Acompañamiento no encontrado")
+        
+    import time
+    # Expira exactamente en 1 hora (3600 segundos)
+    exp_timestamp = int(time.time() + 3600)
+    
+    payload = {
+        "eval_id": eval_id,
+        "purpose": "temp_share_pedagogico",
+        "created_by": current_user.id,
+        "exp": exp_timestamp
+    }
+    
+    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    
+    return {
+        "token": token,
+        "expires_in_seconds": 3600,
+        "expires_at": exp_timestamp,
+        "eval_id": eval_id
+    }
 
 
 @router.delete("/{evaluacion_id}")

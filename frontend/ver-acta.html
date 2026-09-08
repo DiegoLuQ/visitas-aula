@@ -608,16 +608,30 @@
         try {
             const response = await fetch(`${API_URL}/evaluaciones/public/ver/${code}`);
             if (!response.ok) {
-                if(response.status === 403) throw new Error('El acompañamiento aún no ha sido finalizado.');
-                throw new Error('No se encontró el acompañamiento solicitado.');
+                let errorMsg = 'No se encontró el acompañamiento solicitado.';
+                try {
+                    const errData = await response.json();
+                    if (errData && errData.detail) {
+                        errorMsg = errData.detail;
+                    }
+                } catch(e){}
+                
+                if (response.status === 401 || response.status === 403) {
+                    throw new Error(errorMsg);
+                }
+                throw new Error(errorMsg);
             }
             
             const data = await response.json();
             renderData(data);
         } catch (error) {
-            document.getElementById('loading').innerHTML = `<div style="background:#fee2e2; color:#b91c1c; padding:30px; border-radius:12px; border:1px solid #fecaca;">` +
-                `<h2 style="margin-bottom:10px;">Error</h2>` +
-                `<p>${error.message}</p></div>`;
+            const isExpirado = error.message.toLowerCase().includes('expirado') || error.message.toLowerCase().includes('validez');
+            document.getElementById('loading').innerHTML = `<div style="background:#fee2e2; color:#b91c1c; padding:35px; border-radius:16px; border:1px solid #fecaca; text-align:center; max-width:600px; margin:0 auto; box-shadow: 0 10px 25px rgba(220, 38, 38, 0.1);">` +
+                `<div style="font-size: 3rem; margin-bottom: 10px;">${isExpirado ? '⏳' : '⚠️'}</div>` +
+                `<h2 style="margin-bottom:12px; font-size: 1.5rem; font-weight: 800;">${isExpirado ? 'Enlace Temporal Expirado' : 'Acceso No Disponible'}</h2>` +
+                `<p style="font-size: 1rem; line-height: 1.5; color: #7f1d1d; margin-bottom: 15px;">${error.message}</p>` +
+                (isExpirado ? `<p style="font-size: 0.85rem; color: #991b1b;">Los enlaces privados para funcionarios tienen una duración de 1 hora por seguridad. Comunícate con el equipo directivo u observador para generar un nuevo enlace.</p>` : '') +
+                `</div>`;
         }
     }
 

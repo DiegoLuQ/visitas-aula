@@ -11,6 +11,11 @@
     overflow-y: auto;            /* si el modal es muy alto, la capa scrollea */
 }
 
+/* Modales de máxima prioridad sobre cualquier otro modal (Alerts, Confirmaciones, Loading) */
+#alertOverlay, #confirmOverlay, #loadingOverlay {
+    z-index: 100000 !important;
+}
+
 .modal-overlay.active { display: flex; }
 
 .modal {

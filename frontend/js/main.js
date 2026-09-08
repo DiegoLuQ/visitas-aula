@@ -59,7 +59,7 @@ import {
     loadVisitasHistorial, aplicarFiltros as aplicarFiltrosVisitas, limpiarFiltros as limpiarFiltrosVisitas,
     toggleFiltrosVisitas,
     verDetalleVisita, eliminarVisita, abrirModalFirma, iniciarFirmaDigital, iniciarFirmaEmail, confirmarEnvioFirma,
-    regenerarLinkFirma, enviarPautaResumida, confirmarEnvioPauta
+    regenerarLinkFirma, enviarPautaResumida, confirmarEnvioPauta, generarEnlaceTemporalDocente
 } from './modules/visitas_historial.js';
 import {
     initUtpPauta, updateUtpScore, updateUtpEvidence, addUtpPlanRow, removeUtpPlanRow, updateUtpPlanField, confirmUtpSave,
@@ -152,7 +152,8 @@ const app = {
     // Visitas Historial
     loadVisitasHistorial, aplicarFiltrosVisitas, limpiarFiltrosVisitas, toggleFiltrosVisitas,
     verDetalleVisita, eliminarVisita,
-    abrirModalFirma, iniciarFirmaDigital, iniciarFirmaEmail, confirmarEnvioFirma, regenerarLinkFirma, enviarPautaResumida, confirmarEnvioPauta
+    abrirModalFirma, iniciarFirmaDigital, iniciarFirmaEmail, confirmarEnvioFirma, regenerarLinkFirma, enviarPautaResumida, confirmarEnvioPauta,
+    generarEnlaceTemporalDocente
 };
 
 Object.assign(window, app);

@@ -671,10 +671,35 @@ export async function enviarPautaResumida(id) {
                                 <p class="text-indigo-600 font-semibold mt-2">ℹ️ Se enviará el acta resumida con observaciones y retroalimentación cualitativa.</p>
                             </div>
                             
-                            <button onclick="window.app.confirmarEnvioPauta(${id})" class="mt-2 w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl font-black uppercase tracking-widest text-xs shadow-md transition-all flex items-center justify-center gap-2">
-                                <i class="fas fa-paper-plane"></i>
-                                Enviar Pautas por Correo
-                            </button>
+                            <div class="flex flex-col sm:flex-row gap-2 mt-2">
+                                <button onclick="window.app.confirmarEnvioPauta(${id})" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-4 rounded-xl font-black uppercase tracking-widest text-xs shadow-md transition-all flex items-center justify-center gap-2">
+                                    <i class="fas fa-paper-plane"></i>
+                                    Enviar por Correo
+                                </button>
+                                <button id="btnGenLinkDocente_${id}" onclick="window.app.generarEnlaceTemporalDocente(${id})" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-3 px-4 rounded-xl font-black uppercase tracking-widest text-xs shadow-md transition-all flex items-center justify-center gap-2">
+                                    <i class="fas fa-link"></i>
+                                    Generar Enlace (1 Hora)
+                                </button>
+                            </div>
+
+                            <!-- Contenedor del enlace generado -->
+                            <div id="containerEnlaceDocente_${id}" class="hidden mt-3 p-3 bg-white rounded-xl border border-emerald-200 text-xs">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="font-bold text-emerald-800 flex items-center gap-1">
+                                        <i class="fas fa-clock text-emerald-600"></i> Enlace Privado (Válido 1 Hora)
+                                    </span>
+                                    <span class="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold">Sin Puntajes</span>
+                                </div>
+                                <div class="flex items-center gap-2 mt-2">
+                                    <input type="text" id="inputEnlaceDocente_${id}" readonly class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-700 text-xs font-mono select-all focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                                    <button id="btnCopiarEnlaceDocente_${id}" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-2 rounded-lg font-bold text-xs flex items-center gap-1 shadow-sm shrink-0">
+                                        <i class="fas fa-copy"></i> Copiar
+                                    </button>
+                                </div>
+                                <p class="text-[11px] text-slate-500 mt-2">
+                                    🔒 Este enlace es de acceso directo para el funcionario, no requiere contraseña y dejará de funcionar automáticamente en 60 minutos.
+                                </p>
+                            </div>
                         </div>
 
                         <!-- Opción 2: Correo Completo (Directivos - Solo Lectura/Info) -->
@@ -709,6 +734,63 @@ export async function enviarPautaResumida(id) {
     } catch (error) {
         mostrarLoading(false);
         showAlert('Error', 'No se pudo cargar la información: ' + error.message, 'error');
+    }
+}
+
+export async function generarEnlaceTemporalDocente(id) {
+    const btn = document.getElementById(`btnGenLinkDocente_${id}`);
+    const container = document.getElementById(`containerEnlaceDocente_${id}`);
+    const input = document.getElementById(`inputEnlaceDocente_${id}`);
+    const copyBtn = document.getElementById(`btnCopiarEnlaceDocente_${id}`);
+
+    try {
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando...';
+        }
+
+        const res = await api.evaluaciones.generateTempShareLink(id);
+        const token = res.token;
+
+        // Construir URL absoluta a ver-acta.html
+        const pathParts = window.location.pathname.split('/');
+        pathParts.pop(); // Quitar archivo actual (ej: dashboard.html)
+        const currentPath = pathParts.join('/');
+        const baseUrl = window.location.origin + (currentPath.endsWith('/') ? currentPath : currentPath + '/');
+        const shareUrl = `${baseUrl}ver-acta.html?c=${token}`;
+
+        if (input && container) {
+            input.value = shareUrl;
+            container.classList.remove('hidden');
+
+            if (copyBtn) {
+                copyBtn.onclick = () => {
+                    navigator.clipboard.writeText(shareUrl).then(() => {
+                        copyBtn.innerHTML = '<i class="fas fa-check"></i> ¡Copiado!';
+                        copyBtn.classList.replace('bg-emerald-700', 'bg-emerald-600');
+                        showAlert('Copiado', 'Enlace temporal de 1 hora copiado al portapapeles.', 'success');
+                        setTimeout(() => {
+                            copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copiar';
+                        }, 2500);
+                    }).catch(() => {
+                        input.select();
+                        document.execCommand('copy');
+                        showAlert('Copiado', 'Enlace copiado al portapapeles.', 'success');
+                    });
+                };
+            }
+        }
+
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-sync-alt"></i> Regenerar Enlace';
+        }
+    } catch (error) {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-link"></i> Generar Enlace (1 Hora)';
+        }
+        showAlert('Error', 'No se pudo generar el enlace: ' + error.message, 'error');
     }
 }
 
