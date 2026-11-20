@@ -40,22 +40,28 @@ def auto_migrate_tokens():
             print("[MIGRACIÓN] Columnas creadas exitosamente.")
         
         # Poblar evaluaciones sin tokens
+        # try/finally: si la consulta falla, la sesión debe cerrarse igual; de lo contrario
+        # deja un metadata lock abierto y cualquier ALTER TABLE posterior queda colgado.
         db = SessionLocal()
-        sin_token = db.query(Evaluacion).filter(
-            (Evaluacion.token_full == None) | (Evaluacion.token_pedagogico == None)
-        ).all()
-        
-        if sin_token:
-            print(f"[MIGRACIÓN] Generando UUIDs para {len(sin_token)} evaluaciones...")
-            for ev in sin_token:
-                if not ev.token_full:
-                    ev.token_full = str(uuid.uuid4())
-                if not ev.token_pedagogico:
-                    ev.token_pedagogico = str(uuid.uuid4())
-            db.commit()
-            print("[MIGRACIÓN] UUIDs generados exitosamente.")
-        
-        db.close()
+        try:
+            sin_token = db.query(Evaluacion).filter(
+                (Evaluacion.token_full == None) | (Evaluacion.token_pedagogico == None)
+            ).all()
+
+            if sin_token:
+                print(f"[MIGRACIÓN] Generando UUIDs para {len(sin_token)} evaluaciones...")
+                for ev in sin_token:
+                    if not ev.token_full:
+                        ev.token_full = str(uuid.uuid4())
+                    if not ev.token_pedagogico:
+                        ev.token_pedagogico = str(uuid.uuid4())
+                db.commit()
+                print("[MIGRACIÓN] UUIDs generados exitosamente.")
+        except Exception:
+            db.rollback()
+            raise
+        finally:
+            db.close()
     except Exception as e:
         print(f"[MIGRACIÓN] Advertencia (no crítica): {e}")
 
@@ -419,6 +425,8 @@ def auto_migrate_firma_evidencia():
         print(f"[MIGRACIÓN FIRMA EVIDENCIA] Advertencia: {e}")
 
 
+# Debe ir primero: las demás migraciones consultan Evaluacion vía ORM y fallarían si faltan estas columnas.
+auto_migrate_firma_evidencia()
 auto_migrate_tokens()
 auto_migrate_tipo_funcionario()
 auto_migrate_reporting()
@@ -429,7 +437,6 @@ auto_migrate_roles()
 auto_migrate_metas()
 auto_migrate_pdf_visitas()
 auto_migrate_pie_plantilla()
-auto_migrate_firma_evidencia()
 
 
 from utils.tasks import scheduled_backup, scheduled_weekly_report

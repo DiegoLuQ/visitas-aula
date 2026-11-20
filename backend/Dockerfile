@@ -57,6 +57,8 @@ COPY . .
 
 # Asegurar que los binarios estén en el PATH
 ENV PATH=/root/.local/bin:$PATH
+# Mostrar los print() en docker logs al instante (sin buffer)
+ENV PYTHONUNBUFFERED=1
 
 EXPOSE 8000
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
