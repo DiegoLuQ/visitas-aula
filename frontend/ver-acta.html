@@ -1155,15 +1155,16 @@
             ENLACE_EMAIL: 'Enlace personal enviado al correo del docente',
         };
         const d = e.docente || {};
+        // Solo se muestran los datos registrados (las firmas antiguas no tienen método/IP/dispositivo).
         const filas = [
             ['Firmado por', `${d.nombre || '-'}${d.rut ? ' · RUT ' + d.rut : ''}`],
-            ['Correo del firmante', d.email || '-'],
-            ['Fecha y hora de firma', formatDate(e.fecha_firma_docente, true)],
-            ['Método de autenticación', metodos[e.firma_metodo] || 'No registrado (firma anterior a la trazabilidad)'],
-            ['Dirección IP de origen', e.firma_ip || 'No registrada'],
-            ['Dispositivo / navegador', e.firma_user_agent ? describirDispositivo(e.firma_user_agent) : 'No registrado'],
-            ['Código de verificación', e.codigo_firma || '-'],
-        ];
+            ['Correo del firmante', d.email],
+            ['Fecha y hora de firma', e.fecha_firma_docente ? formatDate(e.fecha_firma_docente, true) : null],
+            ['Método de autenticación', metodos[e.firma_metodo]],
+            ['Dirección IP de origen', e.firma_ip],
+            ['Dispositivo / navegador', e.firma_user_agent ? describirDispositivo(e.firma_user_agent) : null],
+            ['Código de verificación', e.codigo_firma],
+        ].filter(([, v]) => v);
         tabla.innerHTML = filas.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('');
     }
 

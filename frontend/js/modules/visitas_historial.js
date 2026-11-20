@@ -128,15 +128,10 @@ function formatFechaHoraFirma(str) {
 }
 
 function firmaCellHtml(v) {
-    if (!v.codigo_firma) return '<span style="color:#94a3b8;">—</span>';
-    const metodo = FIRMA_METODO_LABELS[v.firma_metodo] || 'Sin registro de método';
-    const icono = v.firma_metodo === 'ENLACE_EMAIL' ? 'fa-envelope' : 'fa-mobile-alt';
-    return `
-        <div style="display:flex; flex-direction:column; line-height:1.3;">
-            <span style="font-family:monospace; font-weight:700; color:#047857;">${v.codigo_firma}</span>
-            <span style="font-size:0.78rem; color:#64748b;">${formatFechaHoraFirma(v.fecha_firma_docente)}</span>
-            <span style="font-size:0.72rem; color:#94a3b8;" title="${v.firma_ip ? 'IP: ' + v.firma_ip : ''}"><i class="fas ${icono}"></i> ${metodo}</span>
-        </div>`;
+    if (!v.codigo_firma) return '<span style="color:#cbd5e1;">—</span>';
+    const metodo = FIRMA_METODO_LABELS[v.firma_metodo];
+    const tip = [`Firmada: ${v.codigo_firma}`, formatFechaHoraFirma(v.fecha_firma_docente), metodo].filter(Boolean).join(' · ');
+    return `<i class="fas fa-check-circle" style="color:#10b981; font-size:1.15rem;" title="${tip}"></i>`;
 }
 
 // Abre el acta oficial (con la constancia de firma) en una pestaña nueva; desde ahí se descarga en PDF.
@@ -180,7 +175,7 @@ function renderTableRows(visitas) {
             <td>
                 <span class="badge" style="${estadoBadgeStyle(v.estado)}">${v.estado || 'ABIERTA'}</span>
             </td>
-            <td>${firmaCellHtml(v)}</td>
+            <td style="text-align:center;">${firmaCellHtml(v)}</td>
             <td>
                 <div style="display:flex; gap:8px;">${visitaActionButtons(v)}</div>
             </td>

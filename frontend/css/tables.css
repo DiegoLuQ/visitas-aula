@@ -191,6 +191,9 @@
    =========================================================== */
 .historial-cards { display: none; }
 
+/* El historial ocupa todo el ancho disponible (sin el límite de 1200px de .page) */
+#pageVisitasHistorial.page { max-width: 100%; }
+
 @media (max-width: 768px) {
     .historial-desktop { display: none; }       /* ocultar tabla en móvil */
     .historial-cards {
