@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, File, UploadFile, Form
+from fastapi import APIRouter, Depends, HTTPException, Query, File, UploadFile, Form, Request
 from fastapi.responses import StreamingResponse, FileResponse
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func, extract, or_
@@ -54,6 +54,9 @@ def build_evaluacion_response(evaluacion: Evaluacion) -> dict:
         "token_full": evaluacion.token_full,
         "token_pedagogico": evaluacion.token_pedagogico,
         "fecha_firma_docente": evaluacion.fecha_firma_docente,
+        "firma_metodo": evaluacion.firma_metodo,
+        "firma_ip": evaluacion.firma_ip,
+        "firma_user_agent": evaluacion.firma_user_agent,
         "fecha_guardado": evaluacion.fecha_guardado,
         "docente": {
             "id": evaluacion.docente.id,
@@ -509,6 +512,9 @@ def listar_evaluaciones(
             "usuario_id": e.usuario_id,
             "estado": e.estado.value if e.estado else "BORRADOR",
             "codigo_firma": e.codigo_firma,
+            "fecha_firma_docente": e.fecha_firma_docente,
+            "firma_metodo": e.firma_metodo,
+            "firma_ip": e.firma_ip,
             "fecha_guardado": e.fecha_guardado,
             "tiene_pdf": e.pdf_visita is not None
         })
@@ -1544,9 +1550,20 @@ async def get_sign_token(
     return {"token": token}
 
 
+
+def _registrar_evidencia_firma(evaluacion, request: Request, metodo: str):
+    """Guarda método, IP y dispositivo desde donde se firmó (evidencia de firma digital).
+    Detrás de nginx-proxy la IP real del cliente es la primera de X-Forwarded-For."""
+    xff = request.headers.get("x-forwarded-for", "")
+    ip = xff.split(",")[0].strip() if xff else (request.headers.get("x-real-ip") or (request.client.host if request.client else None))
+    evaluacion.firma_metodo = metodo
+    evaluacion.firma_ip = (ip or "")[:64] or None
+    evaluacion.firma_user_agent = (request.headers.get("user-agent") or "")[:255] or None
+
 @router.post("/public-sign")
 async def public_sign(
     data: dict,  # {"token": "...", "code": "123456"}
+    request: Request,
     db: Session = Depends(get_db)
 ):
     token = data.get("token")
@@ -1584,6 +1601,7 @@ async def public_sign(
         evaluacion.estado = EvaluacionEstado.CERRADA
         evaluacion.fecha_firma_docente = datetime.now()
         evaluacion.codigo_firma = verif_code
+        _registrar_evidencia_firma(evaluacion, request, "TOTP_PRESENCIAL")
         
         # Generar tokens UUID de seguridad
         evaluacion.token_full = str(uuid.uuid4())
@@ -1704,6 +1722,7 @@ async def request_remote_sign(
 @router.post("/public-sign-remote")
 async def public_sign_remote(
     data: dict,
+    request: Request,
     db: Session = Depends(get_db)
 ):
     token = data.get("token")
@@ -1737,6 +1756,7 @@ async def public_sign_remote(
     evaluacion.estado = EvaluacionEstado.CERRADA
     evaluacion.fecha_firma_docente = datetime.now()
     evaluacion.codigo_firma = verif_code
+    _registrar_evidencia_firma(evaluacion, request, "ENLACE_EMAIL")
     
     # Generar tokens UUID de seguridad
     evaluacion.token_full = str(uuid.uuid4())

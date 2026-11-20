@@ -87,6 +87,10 @@ function visitaActionButtons(v) {
         <button class="btn btn-sm btn-success" onclick="window.app.abrirModalFirma(${v.id})" title="Firmar Pauta" style="padding: 6px 10px; border-radius: 6px; background-color: #10b981;">
             <i class="fas fa-pen-nib"></i>
         </button>` : ''}
+        ${(v.estado === 'CERRADA' && v.codigo_firma) ? `
+        <button class="btn btn-sm" onclick="window.app.verConstanciaFirma('${v.codigo_firma}')" title="Ver acta firmada / Descargar PDF" style="padding: 6px 10px; border-radius: 6px; background-color:#047857; color:#fff;">
+            <i class="fas fa-file-signature"></i>
+        </button>` : ''}
         ${(v.estado === 'CERRADA' && canSendPauta) ? `
         <button class="btn btn-sm btn-primary" onclick="window.app.enviarPautaResumida(${v.id})" title="Enviar Pauta al Docente" style="padding: 6px 10px; border-radius: 6px; background-color: #4f46e5; border-color: #4f46e5; color: white;">
             <i class="fas fa-paper-plane"></i>
@@ -110,6 +114,41 @@ function tienePromedioNumerico(v) {
     return FORMATOS_CON_PROMEDIO.includes((v.plantilla_formato || '').toUpperCase());
 }
 
+// ---- Evidencia de firma digital ----
+const FIRMA_METODO_LABELS = {
+    TOTP_PRESENCIAL: 'Presencial (Authenticator)',
+    ENLACE_EMAIL: 'Enlace por email',
+};
+
+function formatFechaHoraFirma(str) {
+    if (!str) return '-';
+    const d = new Date(str);
+    if (isNaN(d)) return str;
+    return d.toLocaleString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function firmaCellHtml(v) {
+    if (!v.codigo_firma) return '<span style="color:#94a3b8;">—</span>';
+    const metodo = FIRMA_METODO_LABELS[v.firma_metodo] || 'Sin registro de método';
+    const icono = v.firma_metodo === 'ENLACE_EMAIL' ? 'fa-envelope' : 'fa-mobile-alt';
+    return `
+        <div style="display:flex; flex-direction:column; line-height:1.3;">
+            <span style="font-family:monospace; font-weight:700; color:#047857;">${v.codigo_firma}</span>
+            <span style="font-size:0.78rem; color:#64748b;">${formatFechaHoraFirma(v.fecha_firma_docente)}</span>
+            <span style="font-size:0.72rem; color:#94a3b8;" title="${v.firma_ip ? 'IP: ' + v.firma_ip : ''}"><i class="fas ${icono}"></i> ${metodo}</span>
+        </div>`;
+}
+
+// Abre el acta oficial (con la constancia de firma) en una pestaña nueva; desde ahí se descarga en PDF.
+export function verConstanciaFirma(codigo) {
+    if (!codigo) return;
+    const pathParts = window.location.pathname.split('/');
+    pathParts.pop();
+    const currentPath = pathParts.join('/');
+    const baseUrl = window.location.origin + (currentPath.endsWith('/') ? currentPath : currentPath + '/');
+    window.open(`${baseUrl}ver-acta.html?c=${encodeURIComponent(codigo)}`, '_blank');
+}
+
 function renderTable(visitas) {
     renderTableRows(visitas);
     renderCards(visitas);
@@ -121,7 +160,7 @@ function renderTableRows(visitas) {
     if (!tbody) return;
 
     if (!visitas || visitas.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center" style="padding:40px; color:#94a3b8;">No se encontraron visitas registradas con los criterios seleccionados</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" class="text-center" style="padding:40px; color:#94a3b8;">No se encontraron visitas registradas con los criterios seleccionados</td></tr>';
         return;
     }
 
@@ -141,6 +180,7 @@ function renderTableRows(visitas) {
             <td>
                 <span class="badge" style="${estadoBadgeStyle(v.estado)}">${v.estado || 'ABIERTA'}</span>
             </td>
+            <td>${firmaCellHtml(v)}</td>
             <td>
                 <div style="display:flex; gap:8px;">${visitaActionButtons(v)}</div>
             </td>
@@ -175,6 +215,7 @@ function renderCards(visitas) {
                 <div class="vh-row"><span class="vh-k">Colegio</span><span>${v.colegio_nombre || 'N/A'}</span></div>
                 <div class="vh-row"><span class="vh-k">Visitante</span><span>${v.observador_nombre || 'N/A'}</span></div>
                 <div class="vh-row"><span class="vh-k">Pauta</span><span style="text-align:right;">${v.plantilla_nombre || 'Visita Aula'}${prom}</span></div>
+                ${v.codigo_firma ? `<div class="vh-row"><span class="vh-k">Firma</span><span style="text-align:right;">${firmaCellHtml(v)}</span></div>` : ''}
             </div>
             <div class="vh-actions">${visitaActionButtons(v)}</div>
         </div>`;

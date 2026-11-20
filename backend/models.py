@@ -203,6 +203,10 @@ class Evaluacion(Base):
     estado = Column(Enum(EvaluacionEstado), default=EvaluacionEstado.BORRADOR, nullable=False)
     fecha_firma_docente = Column(DateTime(timezone=True), nullable=True)
     codigo_firma = Column(String(20), nullable=True)
+    # Evidencia de la firma digital (quién, cómo y desde dónde firmó)
+    firma_metodo = Column(String(30), nullable=True)       # TOTP_PRESENCIAL | ENLACE_EMAIL
+    firma_ip = Column(String(64), nullable=True)
+    firma_user_agent = Column(String(255), nullable=True)
     token_full = Column(String(50), nullable=True, index=True)
     token_pedagogico = Column(String(50), nullable=True, index=True)
     fecha_guardado = Column(DateTime(timezone=True), server_default=func.now())

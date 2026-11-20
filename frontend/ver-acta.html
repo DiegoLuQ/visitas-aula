@@ -397,7 +397,15 @@
         .plan-chip .plan-text { font-size: 0.9rem; line-height: 1.5; }
         @media (max-width: 640px) { .plan-meta { grid-template-columns: 1fr; } }
 
+        .firma-evidencia { margin-top: 18px; width: 100%; border-collapse: collapse; font-size: 0.85rem; background: #fff; border-radius: 10px; overflow: hidden; }
+        .firma-evidencia td { padding: 7px 12px; border-bottom: 1px solid #e0f2fe; color: #334155; vertical-align: top; }
+        .firma-evidencia td:first-child { font-weight: 700; color: #003366; width: 38%; white-space: nowrap; }
+        .firma-evidencia tr:last-child td { border-bottom: none; }
+        .btn-descargar-acta { position: fixed; bottom: 24px; right: 24px; background: #047857; color: #fff; border: none; padding: 12px 20px; border-radius: 999px; font-weight: 700; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.15); z-index: 50; }
+        .btn-descargar-acta:hover { background: #065f46; }
+
         @media print {
+            .btn-descargar-acta { display: none !important; }
             body { background: #fff; padding: 0; }
             .container { box-shadow: none; padding: 0; border: none; max-width: 100%; }
             .signature-box { page-break-inside: avoid; }
@@ -479,8 +487,10 @@
             <p>Este informe ha sido validado mediante firma digital y el sello de integridad del Sistema de Gestión de Liderazgo. Los datos aquí presentados son inalterables.</p>
             <div class="signature-code" id="codigoFirma">VERIFICACIÓN: -</div>
             <p style="margin-top: 10px; font-size: 0.8rem; font-weight: 600;">Firmado digitalmente el: <span id="fechaFirma">-</span></p>
+            <table class="firma-evidencia" id="firmaEvidencia"></table>
         </div>
     </div>
+    <button type="button" class="btn-descargar-acta" onclick="window.print()" title="Usa 'Guardar como PDF' en el diálogo de impresión">⬇ Descargar PDF</button>
 </div>
 
 <!-- Modal: Desglose de Indicadores -->
@@ -1132,6 +1142,47 @@
         // Firma
         document.getElementById('codigoFirma').textContent = `AUTENTICACIÓN: ${e.codigo_firma}`;
         document.getElementById('fechaFirma').textContent = formatDate(e.fecha_firma_docente, true);
+        renderEvidenciaFirma(e);
+    }
+
+    // Evidencia de la firma digital: quién, cuándo, cómo y desde dónde firmó.
+    function renderEvidenciaFirma(e) {
+        const tabla = document.getElementById('firmaEvidencia');
+        if (!tabla) return;
+        const esc = (t) => String(t ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        const metodos = {
+            TOTP_PRESENCIAL: 'Código TOTP (Google Authenticator) validado',
+            ENLACE_EMAIL: 'Enlace personal enviado al correo del docente',
+        };
+        const d = e.docente || {};
+        const filas = [
+            ['Firmado por', `${d.nombre || '-'}${d.rut ? ' · RUT ' + d.rut : ''}`],
+            ['Correo del firmante', d.email || '-'],
+            ['Fecha y hora de firma', formatDate(e.fecha_firma_docente, true)],
+            ['Método de autenticación', metodos[e.firma_metodo] || 'No registrado (firma anterior a la trazabilidad)'],
+            ['Dirección IP de origen', e.firma_ip || 'No registrada'],
+            ['Dispositivo / navegador', e.firma_user_agent ? describirDispositivo(e.firma_user_agent) : 'No registrado'],
+            ['Código de verificación', e.codigo_firma || '-'],
+        ];
+        tabla.innerHTML = filas.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('');
+    }
+
+    function describirDispositivo(ua) {
+        let so = 'SO desconocido';
+        if (/Android/i.test(ua)) so = 'Android';
+        else if (/iPhone|iPad|iPod/i.test(ua)) so = 'iOS';
+        else if (/Windows/i.test(ua)) so = 'Windows';
+        else if (/Mac OS X|Macintosh/i.test(ua)) so = 'macOS';
+        else if (/Linux/i.test(ua)) so = 'Linux';
+        let nav = 'Navegador desconocido';
+        if (/Edg\//i.test(ua)) nav = 'Edge';
+        else if (/OPR\//i.test(ua)) nav = 'Opera';
+        else if (/SamsungBrowser/i.test(ua)) nav = 'Samsung Internet';
+        else if (/Chrome\//i.test(ua)) nav = 'Chrome';
+        else if (/Firefox\//i.test(ua)) nav = 'Firefox';
+        else if (/Safari\//i.test(ua)) nav = 'Safari';
+        const tipo = /Mobi|Android|iPhone/i.test(ua) ? 'Móvil' : 'Escritorio';
+        return `${nav} en ${so} (${tipo})`;
     }
 
     function interpretarLiderazgo(promedio) {

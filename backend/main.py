@@ -398,6 +398,27 @@ def auto_migrate_tipo_funcionario():
         print(f"[MIGRACIÓN TIPO FUNCIONARIO] Advertencia: {e}")
 
 
+def auto_migrate_firma_evidencia():
+    """Agrega columnas de evidencia de firma digital (método, IP, dispositivo) a eval_evaluaciones."""
+    from sqlalchemy import text, inspect
+    try:
+        inspector = inspect(engine)
+        cols = [col['name'] for col in inspector.get_columns('eval_evaluaciones')]
+        nuevas = {
+            'firma_metodo': "VARCHAR(30) NULL",
+            'firma_ip': "VARCHAR(64) NULL",
+            'firma_user_agent': "VARCHAR(255) NULL",
+        }
+        with engine.connect() as conn:
+            for col, ddl in nuevas.items():
+                if col not in cols:
+                    print(f"[MIGRACIÓN] Agregando columna {col} a eval_evaluaciones...")
+                    conn.execute(text(f"ALTER TABLE eval_evaluaciones ADD COLUMN {col} {ddl}"))
+            conn.commit()
+    except Exception as e:
+        print(f"[MIGRACIÓN FIRMA EVIDENCIA] Advertencia: {e}")
+
+
 auto_migrate_tokens()
 auto_migrate_tipo_funcionario()
 auto_migrate_reporting()
@@ -408,6 +429,7 @@ auto_migrate_roles()
 auto_migrate_metas()
 auto_migrate_pdf_visitas()
 auto_migrate_pie_plantilla()
+auto_migrate_firma_evidencia()
 
 
 from utils.tasks import scheduled_backup, scheduled_weekly_report

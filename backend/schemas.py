@@ -424,6 +424,9 @@ class EvaluacionResponse(BaseModel):
     codigo_firma: Optional[str] = None
     token_full: Optional[str] = None
     token_pedagogico: Optional[str] = None
+    fecha_firma_docente: Optional[datetime] = None
+    firma_metodo: Optional[str] = None
+    firma_ip: Optional[str] = None
     fecha_guardado: Optional[datetime]
     docente: Optional[DocenteResponse] = None
     curso: Optional[CursoResponse] = None
@@ -462,6 +465,9 @@ class EvaluacionListResponse(BaseModel):
     codigo_firma: Optional[str] = None
     token_full: Optional[str] = None
     token_pedagogico: Optional[str] = None
+    fecha_firma_docente: Optional[datetime] = None
+    firma_metodo: Optional[str] = None
+    firma_ip: Optional[str] = None
     fecha_guardado: Optional[datetime]
     tiene_pdf: bool = False  # True si es una visita histórica subida como PDF
 
